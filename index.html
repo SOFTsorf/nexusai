@@ -2,8 +2,8 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NEXUS - Konto & Daten verwalten</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NEXUS - Verwaltung</title>
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
@@ -13,193 +13,179 @@
         :root {
             --google-blue: #1a73e8;
             --google-red: #d93025;
-            --google-gray: #5f6368;
-            --bg-color: #ffffff;
-            --sidebar-bg: #f8f9fa;
-            --border-color: #dadce0;
+            --bg-gray: #f8f9fa;
+            --border: #dadce0;
+            --text-dark: #202124;
+            --text-light: #5f6368;
         }
 
         body {
             margin: 0;
-            font-family: 'Roboto', Arial, sans-serif;
-            background-color: var(--bg-color);
-            color: #202124;
-            display: flex;
-            height: 100vh;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-gray);
+            color: var(--text-dark);
+            -webkit-tap-highlight-color: transparent;
         }
 
-        /* --- SIDEBAR (Google Style) --- */
-        nav {
-            width: 280px;
-            background: var(--sidebar-bg);
-            border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
-            padding-top: 20px;
-        }
-
-        .nav-item {
-            padding: 12px 24px;
-            margin: 4px 8px;
-            border-radius: 0 25px 25px 0;
-            cursor: pointer;
+        /* NAVIGATION */
+        .nav-bar {
+            height: 64px;
+            background: white;
+            border-bottom: 1px solid var(--border);
             display: flex;
             align-items: center;
-            gap: 15px;
-            font-weight: 500;
-            color: var(--google-gray);
-            transition: background 0.2s;
+            justify-content: space-between;
+            padding: 0 16px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
         }
 
-        .nav-item:hover { background: #f1f3f4; }
-        .nav-item.active {
-            background: #e8f0fe;
-            color: var(--google-blue);
+        .logo { font-size: 22px; color: var(--text-light); display: flex; align-items: center; gap: 8px; }
+        .logo b { color: var(--google-blue); }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 4px 4px 4px 12px;
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            font-size: 14px;
         }
 
-        /* --- MAIN CONTENT --- */
-        main {
-            flex: 1;
-            overflow-y: auto;
-            padding: 48px 64px;
-        }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; }
 
-        header {
+        /* MAIN LAYOUT */
+        .container {
             max-width: 800px;
-            margin-bottom: 32px;
+            margin: 0 auto;
+            padding: 24px 16px;
         }
 
-        h1 { font-size: 28px; font-weight: 400; margin-bottom: 8px; }
-        p.subtitle { color: var(--google-gray); font-size: 14px; }
+        header { text-align: center; margin-bottom: 32px; }
+        header h1 { font-size: 28px; font-weight: 400; margin: 0 0 8px 0; }
+        header p { color: var(--text-light); }
 
-        /* --- CARDS --- */
+        /* CARDS */
         .card {
-            border: 1px solid var(--border-color);
+            background: white;
+            border: 1px solid var(--border);
             border-radius: 8px;
-            padding: 24px;
-            max-width: 800px;
-            margin-bottom: 24px;
-        }
-
-        .card-title {
-            font-size: 18px;
-            font-weight: 500;
             margin-bottom: 16px;
+            overflow: hidden;
+        }
+
+        .card-header { padding: 20px 24px; border-bottom: 1px solid var(--border); }
+        .card-header h2 { font-size: 18px; margin: 0; font-weight: 500; }
+
+        .card-content { padding: 20px 24px; }
+
+        /* CHAT LIST */
+        .chat-item {
             display: flex;
             justify-content: space-between;
             align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid #eee;
         }
+        .chat-item:last-child { border-bottom: none; }
 
-        /* --- CHAT LIST --- */
-        .chat-list {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
+        .chat-meta { display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+        .chat-title { font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .chat-date { font-size: 12px; color: var(--text-light); }
 
-        .chat-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #f1f3f4;
-            transition: box-shadow 0.2s;
-        }
-
-        .chat-row:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
-
-        .chat-info { display: flex; flex-direction: column; gap: 4px; }
-        .chat-name { font-weight: 500; font-size: 14px; }
-        .chat-date { font-size: 12px; color: var(--google-gray); }
-
-        /* --- BUTTONS --- */
+        /* BUTTONS */
         .btn {
-            padding: 8px 16px;
+            padding: 10px 24px;
             border-radius: 4px;
             font-size: 14px;
             font-weight: 500;
             cursor: pointer;
-            border: 1px solid var(--border-color);
+            border: 1px solid var(--border);
             background: white;
-            transition: background 0.2s;
-        }
-
-        .btn-delete { color: var(--google-red); border-color: #f5c2c7; }
-        .btn-delete:hover { background: #fff1f0; }
-
-        .btn-primary {
-            background: var(--google-blue);
-            color: white;
-            border: none;
-        }
-
-        .btn-primary:hover { background: #1967d2; box-shadow: 0 1px 2px rgba(0,0,0,0.2); }
-
-        /* --- AUTH INFO --- */
-        .user-profile {
-            padding: 24px;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
+            transition: 0.2s;
+            display: inline-flex;
             align-items: center;
-            gap: 12px;
+            justify-content: center;
         }
 
-        .avatar { width: 40px; height: 40px; border-radius: 50%; }
+        .btn-blue { background: var(--google-blue); color: white; border: none; }
+        .btn-blue:hover { box-shadow: 0 1px 3px rgba(0,0,0,0.3); }
 
-        @media (max-width: 768px) {
-            nav { display: none; }
-            main { padding: 20px; }
+        .btn-red { color: var(--google-red); border: 1px solid #f5c2c7; width: 100%; margin-top: 10px; }
+        .btn-red:hover { background: #fff1f0; }
+        
+        .btn-small { padding: 6px 12px; font-size: 12px; }
+
+        /* LOGIN OVERLAY */
+        #login-overlay {
+            position: fixed; inset: 0; background: var(--bg-gray); 
+            z-index: 1000; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 20px; text-align: center;
+        }
+
+        /* MOBILE FIXES */
+        @media (max-width: 600px) {
+            header h1 { font-size: 22px; }
+            .card-header, .card-content { padding: 16px; }
+            .nav-bar { height: 56px; }
         }
     </style>
 </head>
 <body>
 
-    <nav>
-        <div class="user-profile" id="user-info-box">
-            <img src="" id="user-img" class="avatar" style="display:none;">
-            <div>
-                <div id="user-name" style="font-weight:bold; font-size:14px;">Nicht angemeldet</div>
-                <div id="user-email" style="font-size:12px; color:gray;"></div>
+    <div id="login-overlay">
+        <h2 style="font-weight: 400; font-size: 24px;">Anmeldung erforderlich</h2>
+        <p style="color: var(--text-light); max-width: 300px; margin-bottom: 24px;">
+            Um deine NEXUS AI Daten zu verwalten oder zu löschen, musst du dich mit deinem Google-Konto identifizieren.
+        </p>
+        <button class="btn btn-blue" onclick="login()">Mit Google anmelden</button>
+        <button class="btn" style="margin-top: 12px;" onclick="window.location.href='index.html'">Zurück zum Chat</button>
+    </div>
+
+    <div id="main-content" style="display: none;">
+        <nav class="nav-bar">
+            <div class="logo"><b>NEXUS</b> Konto</div>
+            <div class="user-pill">
+                <span id="user-name-pill">User</span>
+                <img id="user-avatar-pill" src="" class="avatar">
+            </div>
+        </nav>
+
+        <div class="container">
+            <header>
+                <h1>Daten & Personalisierung</h1>
+                <p>Verwalte deine Verläufe und Kontoeinstellungen.</p>
+            </header>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Deine Chatverläufe</h2>
+                </div>
+                <div class="card-content">
+                    <div id="chat-list">
+                        <p style="font-size: 14px; color: var(--text-light);">Lade Chats...</p>
+                    </div>
+                    <button class="btn btn-red" onclick="deleteAllChats()">
+                        Alle Verläufe unwiderruflich löschen
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <h2>Konto-Aktionen</h2>
+                </div>
+                <div class="card-content" style="display: flex; flex-direction: column; gap: 12px;">
+                    <button class="btn" onclick="window.location.href='index.html'">Zurück zum Chatbot</button>
+                    <button class="btn" onclick="logout()" style="color: var(--google-red);">Abmelden</button>
+                </div>
             </div>
         </div>
-        <div class="nav-item active">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-5-9h10v2H7z"/></svg>
-            Daten & Datenschutz
-        </div>
-        <div class="nav-item" onclick="window.location.href='index.html'">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-            Zurück zum Chat
-        </div>
-        <div class="nav-item" onclick="logout()" style="margin-top: auto; margin-bottom: 20px; color: var(--google-red);">
-            Abmelden
-        </div>
-    </nav>
-
-    <main>
-        <header>
-            <h1>Persönliche Daten & Chatverläufe</h1>
-            <p class="subtitle">Verwalte deine mit NEXUS AI synchronisierten Daten und lösche bei Bedarf einzelne Unterhaltungen.</p>
-        </header>
-
-        <div class="card">
-            <div class="card-title">
-                Gespeicherte Chats
-                <button class="btn btn-delete" onclick="deleteAllChats()">Alle löschen</button>
-            </div>
-            <div id="chat-list-container" class="chat-list">
-                <p style="color:gray; font-size:14px;">Lade Daten...</p>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-title">Synchronisierungs-Status</div>
-            <p id="sync-status" style="font-size:14px;">Prüfe Verbindung zu Google Cloud...</p>
-        </div>
-    </main>
+    </div>
 
     <script>
-        // --- FIREBASE KONFIGURATION (Identisch mit deiner Hauptseite) ---
         const firebaseConfig = {
           apiKey: "AIzaSyCefysePJNfZM_ng3wgiZvMXIQ0RcmFxJ0",
           authDomain: "nexusanmeldung.firebaseapp.com",
@@ -215,91 +201,80 @@
 
         let currentUser = null;
 
-        // --- AUTH LOGIK ---
+        // AUTH CHECK
         auth.onAuthStateChanged(user => {
             if (user) {
                 currentUser = user;
-                document.getElementById('user-name').innerText = user.displayName;
-                document.getElementById('user-email').innerText = user.email;
-                document.getElementById('user-img').src = user.photoURL;
-                document.getElementById('user-img').style.display = 'block';
-                document.getElementById('sync-status').innerText = "✓ Dein Konto ist mit der Cloud verbunden.";
-                loadUserChats();
+                document.getElementById('login-overlay').style.display = 'none';
+                document.getElementById('main-content').style.display = 'block';
+                document.getElementById('user-name-pill').innerText = user.displayName.split(' ')[0];
+                document.getElementById('user-avatar-pill').src = user.photoURL;
+                loadChats();
             } else {
-                // Wenn nicht eingeloggt, zurück zum Chat oder Login
-                window.location.href = 'index.html'; 
+                document.getElementById('login-overlay').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
             }
         });
 
-        function logout() {
-            auth.signOut().then(() => window.location.href = 'index.html');
+        function login() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider);
         }
 
-        // --- DATEN LADEN ---
-        async function loadUserChats() {
-            const container = document.getElementById('chat-list-container');
-            
+        function logout() {
+            auth.signOut();
+        }
+
+        // CHAT LOGIK
+        async function loadChats() {
+            const list = document.getElementById('chat-list');
             try {
                 const snapshot = await db.collection('users').doc(currentUser.uid).collection('chats').get();
-                
                 if (snapshot.empty) {
-                    container.innerHTML = '<p style="color:gray; font-size:14px;">Keine gespeicherten Chats gefunden.</p>';
+                    list.innerHTML = '<p style="font-size:14px; color:gray;">Keine Verläufe in der Cloud gefunden.</p>';
                     return;
                 }
-
-                container.innerHTML = '';
+                list.innerHTML = '';
                 snapshot.forEach(doc => {
                     const data = doc.data();
-                    const date = data.updatedAt ? new Date(data.updatedAt).toLocaleString('de-DE') : 'Unbekanntes Datum';
-                    
-                    const row = document.createElement('div');
-                    row.className = 'chat-row';
-                    row.innerHTML = `
-                        <div class="chat-info">
-                            <span class="chat-name">${data.title || 'Unterhaltung'}</span>
-                            <span class="chat-date">${date}</span>
+                    const item = document.createElement('div');
+                    item.className = 'chat-item';
+                    item.innerHTML = `
+                        <div class="chat-meta">
+                            <span class="chat-title">${data.title || 'Chat ohne Titel'}</span>
+                            <span class="chat-date">${new Date(data.updatedAt).toLocaleDateString()}</span>
                         </div>
-                        <button class="btn btn-delete" onclick="deleteSingleChat('${doc.id}')">Löschen</button>
+                        <button class="btn btn-small" onclick="deleteChat('${doc.id}')">Entfernen</button>
                     `;
-                    container.appendChild(row);
+                    list.appendChild(item);
                 });
             } catch (e) {
-                container.innerHTML = '<p style="color:red;">Fehler beim Laden der Daten.</p>';
+                list.innerHTML = '<p style="color:red;">Fehler beim Laden.</p>';
             }
         }
 
-        // --- DATEN LÖSCHEN ---
-        async function deleteSingleChat(chatId) {
-            if (!confirm("Diesen Chat wirklich unwiderruflich löschen?")) return;
+        async function deleteChat(id) {
+            if(!confirm("Diesen Chat wirklich löschen?")) return;
+            await db.collection('users').doc(currentUser.uid).collection('chats').doc(id).delete();
             
-            try {
-                await db.collection('users').doc(currentUser.uid).collection('chats').doc(chatId).delete();
-                // Auch aus LocalStorage entfernen, damit es im Chat-Fenster weg ist
-                let localChats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-                delete localChats[chatId];
-                localStorage.setItem('nexus_chats', JSON.stringify(localChats));
-                
-                loadUserChats(); // Liste aktualisieren
-            } catch (e) {
-                alert("Fehler beim Löschen.");
-            }
+            // Sync LocalStorage
+            let local = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
+            delete local[id];
+            localStorage.setItem('nexus_chats', JSON.stringify(local));
+            
+            loadChats();
         }
 
         async function deleteAllChats() {
-            if (!confirm("Möchtest du WIRKLICH alle deine Chats aus der Cloud und von diesem Gerät löschen? Dies kann nicht rückgängig gemacht werden.")) return;
-
-            try {
-                const snapshot = await db.collection('users').doc(currentUser.uid).collection('chats').get();
-                const batch = db.batch();
-                snapshot.forEach(doc => batch.delete(doc.ref));
-                await batch.commit();
-                
-                localStorage.removeItem('nexus_chats');
-                loadUserChats();
-                alert("Alle Daten wurden gelöscht.");
-            } catch (e) {
-                alert("Fehler: " + e.message);
-            }
+            if(!confirm("WIRKLICH ALLES LÖSCHEN? Diese Aktion kann nicht rückgängig gemacht werden.")) return;
+            const snapshot = await db.collection('users').doc(currentUser.uid).collection('chats').get();
+            const batch = db.batch();
+            snapshot.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            
+            localStorage.removeItem('nexus_chats');
+            alert("Sämtliche Daten wurden bereinigt.");
+            loadChats();
         }
     </script>
 </body>
