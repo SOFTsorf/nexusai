@@ -2,94 +2,215 @@
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>NexusAI Console</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
     
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --g-blue: #1a73e8; --g-red: #d93025; --g-bg: #f8f9fa; --g-border: #dadce0; --text-main: #202124; }
-        body { margin: 0; font-family: 'Google Sans', Roboto, Arial, sans-serif; background: var(--g-bg); color: var(--text-main); }
-        
-        /* HEADER */
-        .nav { height: 60px; background: white; border-bottom: 1px solid var(--g-border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; position: sticky; top: 0; z-index: 10; }
-        .nav-title { font-size: 20px; color: #5f6368; }
-        .user-info { display: flex; align-items: center; gap: 8px; font-size: 14px; }
-        .avatar { width: 32px; height: 32px; border-radius: 50%; }
-
-        /* CONTENT */
-        .container { max-width: 800px; margin: 0 auto; padding: 16px; }
-        .hero { text-align: center; padding: 24px 0; }
-        .hero h1 { font-size: 24px; font-weight: 400; margin: 0; }
-        
-        .card { background: white; border: 1px solid var(--g-border); border-radius: 12px; margin-bottom: 16px; overflow: hidden; }
-        .card-inner { padding: 20px; }
-        .card-title { font-size: 18px; font-weight: 500; margin-bottom: 12px; }
-        
-        /* CHAT LIST */
-        .chat-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .chat-row:last-child { border-bottom: none; }
-        .chat-label { display: flex; flex-direction: column; overflow: hidden; }
-        .chat-name { font-weight: 500; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .chat-date { font-size: 12px; color: #70757a; }
-
-        /* BUTTONS */
-        .btn { padding: 10px 20px; border-radius: 8px; border: 1px solid var(--g-border); background: white; font-weight: 500; cursor: pointer; transition: 0.2s; font-size: 14px; }
-        .btn-blue { background: var(--g-blue); color: white; border: none; }
-        .btn-danger { color: var(--g-red); width: 100%; margin-top: 15px; }
-        .btn:active { background: #f1f3f4; }
-
-        /* LOGIN SCREEN */
-        #auth-guard { position: fixed; inset: 0; background: white; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 20px; }
-
-        @media (max-width: 600px) {
-            .container { padding: 10px; }
-            .hero h1 { font-size: 20px; }
+        /* CSS Variablen für einfaches Umschalten */
+        :root {
+            --g-blue: #1a73e8;
+            --g-blue-hover: #1765cc;
+            --g-red: #d93025;
+            --g-bg: #ffffff;
+            --g-surface: #ffffff;
+            --g-sidebar: #ffffff;
+            --g-border: #dadce0;
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --card-bg: #ffffff;
+            --nav-active: #e8f0fe;
         }
+
+        /* Dark Mode Definitionen */
+        body.dark-mode {
+            --g-bg: #121212;
+            --g-surface: #1e1e1e;
+            --g-sidebar: #121212;
+            --g-border: #3c4043;
+            --text-main: #e8eaed;
+            --text-sub: #9aa0a6;
+            --card-bg: #202124;
+            --nav-active: #3c4043;
+        }
+
+        body { 
+            margin: 0; 
+            font-family: 'Roboto', Arial, sans-serif; 
+            background: var(--g-bg); 
+            color: var(--text-main);
+            transition: background 0.3s, color 0.3s;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .header {
+            height: 64px;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--g-border);
+            background: var(--g-surface);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            padding: 24px 12px;
+            border-right: 1px solid var(--g-border);
+            background: var(--g-sidebar);
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 16px;
+            border-radius: 0 24px 24px 0;
+            cursor: pointer;
+            color: var(--text-main);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            margin-right: 12px;
+            transition: 0.2s;
+        }
+
+        .nav-item:hover { background: var(--g-border); }
+        .nav-item.active { background: var(--nav-active); color: var(--g-blue); }
+
+        .content { padding: 40px; overflow-y: auto; }
+
+        .card {
+            border: 1px solid var(--g-border);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            background: var(--card-bg);
+        }
+
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--g-border);
+        }
+
+        .card-body { padding: 24px; }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--g-border);
+        }
+
+        select, input[type="range"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid var(--g-border);
+            background: var(--g-surface);
+            color: var(--text-main);
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 24px;
+            border: 1px solid var(--g-border);
+            background: var(--g-surface);
+            color: var(--text-main);
+            font-weight: 500;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-blue { background: var(--g-blue); color: white; border: none; }
+
+        #auth-guard {
+            position: fixed; inset: 0; background: var(--g-bg); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .avatar { width: 32px; height: 32px; border-radius: 50%; }
     </style>
 </head>
-<body>
-
-    <div id="auth-guard">
-        <div style="font-size: 40px; margin-bottom: 20px;">NexusAI Console</div>
-        <h2>Anmeldung erforderlich</h2>
-        <p style="color: #5f6368; margin-bottom: 30px;">Du musst dich einloggen, um deine Verläufe von <b>NEXUS AI</b> zu verwalten.</p>
+<body class="light-mode"> <div id="auth-guard">
+        <span class="material-icons-outlined" style="font-size: 64px; color: var(--g-blue); margin-bottom: 16px;">account_circle</span>
+        <h1>NexusAI Console</h1>
         <button class="btn btn-blue" onclick="signIn()">Mit Google anmelden</button>
-        <br>
-        <a href="index.html" style="color: var(--g-blue); text-decoration: none; font-size: 14px;">Zurück zum Chat</a>
     </div>
 
     <div id="main-ui" style="display:none;">
-        <div class="nav">
-            <div class="nav-title">NexusAI <b>Console</b></div>
-            <div class="user-info">
+        <header class="header">
+            <div style="display:flex; align-items:center; gap:10px; font-size:20px;">
+                <span class="material-icons-outlined" style="color:var(--g-blue)">settings</span>
+                <span>NexusAI <b>Console</b></span>
+            </div>
+            <div style="display:flex; align-items:center; gap:12px;">
                 <span id="u-name"></span>
                 <img id="u-img" class="avatar">
             </div>
-        </div>
+        </header>
 
-        <div class="container">
-            <div class="hero">
-                <h1 id="welcome-msg">Verwalte deine Daten</h1>
-            </div>
-
-            <div class="card">
-                <div class="card-inner">
-                    <div class="card-title">Cloud-Chatverläufe</div>
-                    <div id="chat-list"><p style="font-size:14px; color:gray;">Suche Chats...</p></div>
-                    <button class="btn btn-danger" onclick="clearEverything()">Alle Cloud-Daten löschen</button>
+        <div class="main-container">
+            <nav class="sidebar">
+                <div class="nav-item active"><span class="material-icons-outlined">tune</span> Einstellungen</div>
+                <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'">
+                    <span class="material-icons-outlined">launch</span> Zum Chat
                 </div>
-            </div>
+                <div class="nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span> Abmelden</div>
+            </nav>
 
-            <div class="card">
-                <div class="card-inner">
-                    <div class="card-title">Einstellungen</div>
-                    <button class="btn" onclick="window.location.href='index.html'" style="width:100%; margin-bottom:10px;">Zurück zur KI</button>
-                    <button class="btn" onclick="signOut()" style="width:100%;">Abmelden</button>
+            <main class="content">
+                <h1 style="font-weight: 400; margin-bottom: 30px;">System-Konfiguration</h1>
+
+                <div class="card">
+                    <div class="card-header"><b>Personalisierung</b></div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Erscheinungsbild</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wähle zwischen hellem und dunklem Design.</div>
+                            </div>
+                            <select id="set-theme" onchange="applyTheme(this.value)">
+                                <option value="light">Hell</option>
+                                <option value="dark">Dunkel</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-            </div>
+
+                <div class="card">
+                    <div class="card-header"><b>KI-Parameter</b></div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Modell</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Standard-Modell für neue Chats.</div>
+                            </div>
+                            <select id="set-model">
+                                <option value="gpt-4o">Nexus Ultra (GPT-4o)</option>
+                                <option value="gpt-4o-mini">Nexus Flash (Mini)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="btn btn-blue" onclick="saveSettings()">Einstellungen dauerhaft speichern</button>
+            </main>
         </div>
     </div>
 
@@ -104,15 +225,14 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
 
         auth.onAuthStateChanged(user => {
             if (user) {
                 document.getElementById('auth-guard').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'block';
-                document.getElementById('u-name').innerText = user.displayName.split(' ')[0];
+                document.getElementById('u-name').innerText = user.displayName;
                 document.getElementById('u-img').src = user.photoURL;
-                loadChats(user.uid);
+                loadLocalSettings();
             } else {
                 document.getElementById('auth-guard').style.display = 'flex';
                 document.getElementById('main-ui').style.display = 'none';
@@ -122,55 +242,32 @@
         function signIn() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOut() { auth.signOut(); }
 
-        async function loadChats(uid) {
-            const listDiv = document.getElementById('chat-list');
-            const snap = await db.collection('users').doc(uid).collection('chats').get();
-            
-            if(snap.empty) {
-                listDiv.innerHTML = '<p style="color:gray; font-size:14px;">Keine Chats gespeichert.</p>';
-                return;
+        // Funktion zum Umschalten des Designs
+        function applyTheme(theme) {
+            if(theme === 'dark') {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
             }
-
-            listDiv.innerHTML = '';
-            snap.forEach(doc => {
-                const data = doc.data();
-                const date = new Date(data.updatedAt).toLocaleDateString();
-                const div = document.createElement('div');
-                div.className = 'chat-row';
-                div.innerHTML = `
-                    <div class="chat-label">
-                        <span class="chat-name">${data.title || 'Chat'}</span>
-                        <span class="chat-date">${date}</span>
-                    </div>
-                    <button class="btn" style="padding:5px 10px;" onclick="deleteItem('${doc.id}')">Löschen</button>
-                `;
-                listDiv.appendChild(div);
-            });
         }
 
-        async function deleteItem(id) {
-            if(!confirm("Chat löschen?")) return;
-            await db.collection('users').doc(auth.currentUser.uid).collection('chats').doc(id).delete();
-            
-            // LocalStorage Sync
-            let chats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-            delete chats[id];
-            localStorage.setItem('nexus_chats', JSON.stringify(chats));
-            
-            loadChats(auth.currentUser.uid);
+        function saveSettings() {
+            const settings = {
+                model: document.getElementById('set-model').value,
+                theme: document.getElementById('set-theme').value
+            };
+            localStorage.setItem('nexus_settings', JSON.stringify(settings));
+            alert("Erfolgreich gespeichert!");
         }
 
-        async function clearEverything() {
-            if(!confirm("Willst du wirklich ALLE Verläufe löschen?")) return;
-            const uid = auth.currentUser.uid;
-            const snap = await db.collection('users').doc(uid).collection('chats').get();
-            const batch = db.batch();
-            snap.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            
-            localStorage.removeItem('nexus_chats');
-            alert("Alle Daten gelöscht.");
-            loadChats(uid);
+        function loadLocalSettings() {
+            const saved = localStorage.getItem('nexus_settings');
+            if(saved) {
+                const s = JSON.parse(saved);
+                document.getElementById('set-model').value = s.model;
+                document.getElementById('set-theme').value = s.theme;
+                applyTheme(s.theme); // Beim Laden direkt anwenden
+            }
         }
     </script>
 </body>
