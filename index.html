@@ -1,421 +1,389 @@
+
+
 <!DOCTYPE html>
 <html lang="de">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <link rel="icon" type="image/png" href="https://lh3.googleusercontent.com/d/1-tt6xDwdG9BGZ4g5ckcN4t5HTK3IcIeR">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>NEXUS AI</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NexusAI Console</title>
     
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
     <style>
-        :root { --accent-green: #00ff88; --bg-dark: #0b0b0c; --bubble-user: #007aff; --bubble-ai: #18191b; --text-main: #e8e8e8; --border-glass: rgba(255, 255, 255, 0.1); --header-bg: rgba(11, 11, 12, 0.8); --glass-blur: blur(30px); --sidebar-width: 280px; --pill-bg: #1e1f20; --pill-text-blue: #8ab4f8; --glow-gradient: linear-gradient(135deg, #4285f4, #9c27b0); }
-        [data-theme="light"] { --bg-dark: #f2f2f7; --bubble-user: #007aff; --bubble-ai: #ffffff; --text-main: #1c1c1e; --border-glass: rgba(0, 0, 0, 0.08); --header-bg: rgba(242, 242, 247, 0.8); --pill-bg: #ffffff; --pill-text-blue: #4285f4; --glow-gradient: linear-gradient(135deg, #a0cfff, #d7aefb); }
-        body, html { margin: 0; padding: 0; background: var(--bg-dark); color: var(--text-main); font-family: -apple-system, system-ui, sans-serif; height: 100%; width: 100%; overflow: hidden; transition: background 0.3s; }
-        
-        /* --- LANDING PAGE STYLES (FROM SNIPPET 1) --- */
+        :root {
+            --g-blue: #1a73e8;
+            --g-red: #d93025;
+            --g-bg: #ffffff;
+            --g-surface: #ffffff;
+            --g-border: #dadce0;
+            --text-main: #202124;
+            --text-sub: #5f6368;
+            --nav-active: #e8f0fe;
+            --card-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --g-bg: #121212;
+            --g-surface: #1e1e1e;
+            --g-border: #3c4043;
+            --text-main: #e8eaed;
+            --text-sub: #9aa0a6;
+            --nav-active: #3c4043;
+            --card-bg: #202124;
+        }
+
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%;
+            font-family: 'Roboto', sans-serif; 
+            background: var(--g-bg); color: var(--text-main);
+            overflow: hidden; /* Wichtig für App-Feeling */
+        }
+
+        /* --- LANDING PAGE (GEMINI STYLE) --- */
         #landing-page {
-            position: fixed; inset: 0; background: #000; z-index: 5000;
-            display: none; flex-direction: column; align-items: center; justify-content: center;
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
             overflow: hidden;
         }
+
         #nexus-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
+
         .landing-content {
             position: relative; z-index: 2; text-align: center; color: white;
             display: flex; flex-direction: column; align-items: center;
+            opacity: 0; animation: contentFadeIn 2s ease-out forwards 0.5s;
             padding: 20px;
         }
-        .gradient-title-large {
+
+        .gradient-title {
             background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #4285f4);
             background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
             font-weight: 500; font-size: 42px;
-            animation: gradientFlowAnim 5s linear infinite;
+            animation: gradientFlow 5s linear infinite;
         }
-        @keyframes gradientFlowAnim { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
-        .btn-google-large {
+        
+        @keyframes contentFadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes gradientFlow { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
+
+        .btn-google {
             margin-top: 40px; padding: 12px 32px; border-radius: 30px;
             background: white; color: black; border: none; font-weight: 500;
             cursor: pointer; display: flex; align-items: center; gap: 10px;
             font-size: 16px; transition: 0.3s;
         }
-        .btn-google-large:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
+        .btn-google:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
 
+        /* --- DASHBOARD UI --- */
+        #main-ui { display: none; height: 100vh; flex-direction: column; }
+        
+        .header {
+            height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--g-border); background: var(--g-surface);
+            flex-shrink: 0;
+        }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+        
         /* SIDEBAR */
-        #sidebar { position: fixed; top: 0; right: calc(-1 * var(--sidebar-width)); width: var(--sidebar-width); height: 100%; background: var(--bg-dark); border-left: 1px solid var(--border-glass); z-index: 2000; transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1); padding: env(safe-area-inset-top) 15px 20px 15px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; }
-        #sidebar.open { right: 0; box-shadow: -10px 0 50px rgba(0,0,0,0.5); }
-        .sidebar-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; display: none; backdrop-filter: blur(4px); }
+        .sidebar { width: 280px; padding: 24px 12px; border-right: 1px solid var(--g-border); display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 0 24px 24px 0; cursor: pointer; color: var(--text-main);
+            text-decoration: none; font-size: 14px; font-weight: 500;
+        }
+        .nav-item:hover { background: var(--g-border); }
+        .nav-item.active { background: var(--nav-active); color: var(--g-blue); }
+
+        /* CONTENT AREA */
+        .content { flex: 1; padding: 40px; overflow-y: auto; background: var(--g-bg); max-width: 900px; margin: 0 auto; width: 100%; }
         
-        /* DASHBOARD STYLES */
-        .dashboard-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; margin-top: 40px; animation: fadeIn 0.8s ease-out; }
-        .greeting-title { font-size: 38px; font-weight: 700; margin-bottom: 30px; letter-spacing: -1px; }
-        .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; width: 100%; max-width: 500px; padding: 10px; }
-        .quick-card { background: var(--bubble-ai); border: 1px solid var(--border-glass); padding: 16px; border-radius: 20px; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 8px; }
-        .quick-card:active { transform: scale(0.95); background: rgba(255,255,255,0.05); }
-        .quick-card svg { width: 24px; height: 24px; fill: var(--pill-text-blue); }
-        .quick-card span { font-size: 14px; font-weight: 500; color: var(--text-main); }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .card {
+            border: 1px solid var(--g-border); border-radius: 12px;
+            margin-bottom: 24px; background: var(--card-bg); overflow: hidden;
+        }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid var(--g-border); font-weight: 500; background: var(--g-surface); }
+        .card-body { padding: 20px 24px; }
 
-        /* AUTH SECTION IN SIDEBAR */
-        #user-profile-section { padding-bottom: 20px; border-bottom: 1px solid var(--border-glass); text-align: center; }
-        .login-btn { width: 100%; padding: 12px; border-radius: 12px; background: var(--text-main); color: var(--bg-dark); border: none; font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; transition: transform 0.1s; }
-        .login-btn:active { transform: scale(0.98); }
-        .user-info { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        .avatar-large { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--accent-green); object-fit: cover; }
-        .logout-btn { padding: 8px 16px; border-radius: 20px; background: rgba(255, 68, 68, 0.15); color: #ff4444; border: 1px solid rgba(255,68,68,0.3); font-size: 12px; font-weight: 600; cursor: pointer; }
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 0; border-bottom: 1px solid var(--g-border);
+        }
+        .setting-row:last-child { border: none; }
 
-        .private-toggle { margin-top: 10px; display: flex; align-items: center; justify-content: space-between; background: rgba(255,255,255,0.05); padding: 12px; border-radius: 12px; border: 1px solid var(--border-glass); }
-        .switch { position: relative; display: inline-block; width: 44px; height: 24px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; inset: 0; background-color: #333; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-green); }
-        input:checked + .slider:before { transform: translateX(20px); }
-        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .history-item { padding: 12px; border-radius: 10px; background: var(--bubble-ai); border: 1px solid var(--border-glass); font-size: 14px; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-main); transition: opacity 0.2s; }
-        .history-item:active { opacity: 0.7; }
+        /* INPUTS & BUTTONS */
+        select, input[type="range"] {
+            padding: 8px 12px; border-radius: 8px; border: 1px solid var(--g-border);
+            background: var(--g-surface); color: var(--text-main); outline: none;
+        }
         
-        /* MODAL */
-        .custom-modal-overlay-style { position: fixed; inset: 0; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); z-index: 6000; display: none; align-items: center; justify-content: center; opacity: 0; transition: opacity 0.3s; }
-        #custom-modal, #auth-required-modal { background: var(--bubble-ai); border: 1px solid var(--border-glass); padding: 25px; border-radius: 24px; width: 85%; max-width: 320px; text-align: center; transform: scale(0.9); transition: transform 0.3s; }
-        .modal-btns { display: flex; gap: 10px; margin-top: 20px; }
-        .modal-btn { flex: 1; padding: 12px; border-radius: 12px; border: none; font-weight: bold; cursor: pointer; font-size: 15px; }
-        .btn-cancel { background: rgba(255,255,255,0.1); color: white; }
-        .btn-confirm { background: #ff4444; color: white; }
-        .btn-primary { background: var(--accent-green); color: black; }
+        .btn {
+            padding: 10px 20px; border-radius: 20px; border: 1px solid var(--g-border);
+            background: var(--g-surface); color: var(--text-main); cursor: pointer;
+            font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:hover { background: var(--g-border); }
+        .btn-blue { background: var(--g-blue); color: white; border: none; }
+        .btn-danger { color: var(--g-red); border-color: var(--g-border); }
+
+        /* CHAT LIST STYLES */
+        .chat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--g-border);
+        }
+        .chat-row:last-child { border-bottom: none; }
+        .chat-info div:first-child { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+        .chat-info div:last-child { font-size: 12px; color: var(--text-sub); }
+
+        /* MOBILE OPTIMIZATION */
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: 64px; background: var(--g-surface); border-top: 1px solid var(--g-border);
+            justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .m-nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--text-sub); gap: 4px; }
         
-        /* HEADER & CHAT */
-        .header-bar { position: fixed; top: 0; left: 0; width: 100%; height: calc(65px + env(safe-area-inset-top)); background: var(--header-bg); backdrop-filter: var(--glass-blur); border-bottom: 1px solid var(--border-glass); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 20px 12px 20px; z-index: 1000; box-sizing: border-box; }
-        #chat-area { position: absolute; inset: 0; padding: calc(85px + env(safe-area-inset-top)) 20px 210px 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; box-sizing: border-box; scroll-behavior: smooth; -webkit-overflow-scrolling: touch; }
-        .blur-fade-layer { position: fixed; bottom: 0; left: 0; width: 100%; height: 210px; z-index: 90; backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); mask-image: linear-gradient(to top, black 55%, transparent 100%); pointer-events: none; }
-        
-        /* LOADING BARS */
-        .top-loading-bar { position: fixed; top: 0; left: 0; width: 100%; height: 3px; z-index: 9999; background: linear-gradient(90deg, transparent, #007aff, #00f2ff, #007aff, transparent); background-size: 200% 100%; box-shadow: 0 0 15px rgba(0, 122, 255, 0.6); display: none; }
-        .top-loading-bar.active { display: block; animation: top-bar-flow 1.5s linear infinite; }
-        @keyframes top-bar-flow { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .bottom-nav { display: flex; }
+            .content { padding: 20px; padding-bottom: 80px; }
+            .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+            select { width: 100%; }
+        }
 
-        /* INPUT FIELD */
-        .footer { position: fixed; bottom: calc(15px + env(safe-area-inset-bottom)); width: 100%; display: flex; flex-direction: column; align-items: center; z-index: 100; gap: 8px; }
-        .gemini-input-container { position: relative; display: flex; align-items: center; width: 92%; max-width: 700px; background: var(--pill-bg); border-radius: 32px; padding: 8px 12px 8px 20px; box-sizing: border-box; border: 1px solid rgba(255,255,255,0.05); transition: all 0.3s ease; }
-        @keyframes border-flow { from { background-position: 0% 0, 0% 0; } to { background-position: 0% 0, 200% 0; } }
-        .loading-active { border: 1px solid transparent !important; background-image: linear-gradient(var(--pill-bg), var(--pill-bg)), linear-gradient(90deg, transparent, #007aff, #00f2ff, #007aff, transparent) !important; background-origin: border-box !important; background-clip: padding-box, border-box !important; background-size: 200% 100% !important; animation: border-flow 1.5s linear infinite !important; box-shadow: 0 0 15px rgba(0, 122, 255, 0.4) !important; pointer-events: none; opacity: 0.8; }
-        input[type="text"] { flex: 1; background: none; border: none; outline: none; color: var(--text-main); font-size: 16px; padding: 10px 0; }
-        input[type="text"]::placeholder { color: #80868b; font-weight: 400; }
-        .input-actions { display: flex; align-items: center; gap: 8px; }
-        .action-circle { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: background 0.2s; }
-        .action-circle:hover { background: rgba(255,255,255,0.05); }
-        .action-circle svg { fill: #e8eaed; width: 22px; height: 22px; }
-        .active-green svg { fill: var(--accent-green) !important; filter: drop-shadow(0 0 5px var(--accent-green)); }
-
-        /* CHAT BUBBLES & CODE & COPY BTN */
-        .bubble-container { display: flex; flex-direction: column; max-width: 85%; animation: slideUp 0.3s ease-out forwards; }
-        .user-container { align-self: flex-end; }
-        .ai-container { align-self: flex-start; width: fit-content; }
-        .bubble { padding: 12px 18px; border-radius: 20px; line-height: 1.5; font-size: 16px; word-wrap: break-word; }
-        .user { background: var(--bubble-user); color: white; border-bottom-right-radius: 4px; }
-        .ai { background: var(--bubble-ai); border: 1px solid var(--border-glass); border-bottom-left-radius: 4px; }
-        
-        /* IMAGE GEN ANIMATION & FIX */
-        .image-gen-container { 
-            margin-top: 8px; 
-            background: #1a1b1e; 
-            border-radius: 18px; 
-            padding: 10px; 
-            border: 1px solid rgba(255,255,255,0.1); 
-            max-width: 100%; 
-            box-sizing: border-box;
-            overflow: hidden;
-        }
-        .image-placeholder {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 1 / 1; 
-            max-width: 300px;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        .shimmer-effect {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.05), transparent);
-            background-size: 200% 100%;
-            animation: shimmer 1.5s infinite;
-        }
-        .scanner-line {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 2px;
-            background: var(--accent-green);
-            box-shadow: 0 0 15px var(--accent-green);
-            animation: scan 3s ease-in-out infinite;
-            z-index: 2;
-        }
-        @keyframes shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-        @keyframes scan { 0% { top: 0; opacity: 0; } 10% { opacity: 1; } 90% { opacity: 1; } 100% { top: 100%; opacity: 0; } }
-
-        img.generated-image { width: 100%; height: 100%; object-fit: cover; display: none; border-radius: 12px; }
-        .copyright { font-size: 10px; color: rgba(128, 128, 128, 0.4); pointer-events: none; z-index: 101; }
-
-        .code-block-wrapper {
-            margin: 12px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: #000;
-        }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: rgba(255,255,255,0.08);
-            padding: 8px 12px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-            font-size: 12px;
-            color: #a0a0a0;
-            font-family: -apple-system, system-ui, sans-serif;
-        }
-        .code-lang {
-            font-weight: bold;
-            text-transform: uppercase;
-            font-size: 11px;
-            letter-spacing: 0.5px;
-        }
-        .copy-btn {
-            background: none;
-            border: none;
-            color: #a0a0a0;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 11px;
-            transition: all 0.2s;
-            padding: 4px 8px;
-            border-radius: 6px;
-        }
-        .copy-btn:hover {
-            color: var(--text-main);
-            background: rgba(255,255,255,0.1);
-        }
-        .copy-btn svg {
-            width: 14px; height: 14px; fill: currentColor;
-        }
-        pre { 
-            background: transparent; border: none; padding: 12px; margin: 0; overflow-x: auto; border-radius: 0;
-        }
-        code { font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace; font-size: 13px; color: #a5d6ff; }
-        
-        .bubble p { margin: 8px 0; }
-        .bubble p:first-child { margin-top: 0; }
-        .bubble p:last-child { margin-bottom: 0; }
-
-        /* MESSAGE FOOTER (SPEAKER) */
-        .msg-footer { display: flex; align-items: center; justify-content: flex-start; gap: 10px; margin-top: 4px; padding: 0 4px; opacity: 0.7; }
-        .speaker-btn { cursor: pointer; padding: 4px; display: flex; align-items: center; border-radius: 50%; }
-        .speaker-btn:hover { background: rgba(255,255,255,0.1); }
-        .speaker-btn svg { width: 14px; height: 14px; fill: #80868b; }
-        .user-container .msg-footer { justify-content: flex-end; }
-        .user-container .speaker-btn svg { fill: rgba(255,255,255,0.8); }
-
-        /* COOKIE BANNER */
-        #cookie-banner { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(150%); width: 90%; max-width: 420px; background: rgba(20, 20, 22, 0.65); border: 1px solid rgba(255, 255, 255, 0.1); backdrop-filter: blur(25px); border-radius: 24px; padding: 20px 25px; z-index: 5000; box-shadow: 0 10px 40px rgba(0,0,0,0.5); display: flex; flex-direction: column; gap: 15px; transition: transform 0.6s cubic-bezier(0.19, 1, 0.22, 1); }
-        #cookie-banner.show { transform: translateX(-50%) translateY(0); }
-        .cookie-title { font-weight: bold; font-size: 16px; color: var(--text-main); display: flex; align-items: center; gap: 10px; }
-        .cookie-actions { display: flex; gap: 10px; margin-top: 5px; }
-        .cookie-btn { flex: 1; padding: 12px; border-radius: 12px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
-        .btn-essential { background: rgba(255, 255, 255, 0.05); color: var(--text-main); border: 1px solid var(--border-glass); }
-        .btn-accept-all { background: var(--text-main); color: black; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        
-        /* ICONS & BUTTONS */
-        .icon-top-btn { cursor: pointer; padding: 10px; display: flex; align-items: center; transition: all 0.2s; }
-        .icon-top-btn svg { fill: #a0a0a0; width: 22px; height: 22px; }
-
-        /* MODIFIED HAMBURGER MENU DESIGN */
-        #hamburger-btn {
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid var(--border-glass);
-            border-radius: 14px;
-            padding: 8px 10px;
-            margin-left: 5px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        #hamburger-btn:hover {
-            background: rgba(0, 255, 136, 0.08);
-            border-color: rgba(0, 255, 136, 0.3);
-            box-shadow: 0 0 15px rgba(0, 255, 136, 0.1);
-        }
-        #hamburger-btn:active {
-            transform: scale(0.92);
-        }
-        .green-icon svg { fill: var(--accent-green) !important; filter: drop-shadow(0 0 5px rgba(0, 255, 136, 0.4)); }
-        .private-icon { border-color: rgba(255,255,255,0.1) !important; }
-        .private-icon svg { fill: #888 !important; filter: none !important; }
-        
-        /* LIVE MODE */
-        #live-overlay { position: fixed; inset: 0; background: #000; z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: space-between; padding: 100px 0 60px 0; }
-        .orb-container { position: relative; width: 220px; height: 220px; display: flex; align-items: center; justify-content: center; }
-        .orb-layer { position: absolute; width: 100%; height: 100%; border-radius: 45% 55% 50% 50% / 50% 50% 45% 55%; background: radial-gradient(circle, var(--accent-green) 0%, transparent 70%); filter: blur(30px); opacity: 0.5; animation: moveOrb 6s infinite linear; }
-        @keyframes moveOrb { 0% { transform: rotate(0deg) scale(1); } 50% { transform: rotate(180deg) scale(1.1); } 100% { transform: rotate(360deg) scale(1); } }
-        .btn-close-live { width: 60px; height: 60px; background: #eb4444; border: none; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-
-        .gradient-text { 
-            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #4285f4); 
-            background-size: 200% auto;
-            -webkit-background-clip: text; 
-            background-clip: text; 
-            -webkit-text-fill-color: transparent; 
-            color: transparent; 
-            font-weight: bold; 
-            display: inline-block; 
-            animation: gradientFlow 5s linear infinite;
-        }
-        @keyframes gradientFlow {
-            0% { background-position: 0% center; }
-            100% { background-position: 200% center; }
-        }
+        .avatar { width: 32px; height: 32px; border-radius: 50%; }
     </style>
 </head>
-<body onload="initApp()">
+<body class="dark-mode">
 
     <div id="landing-page">
         <canvas id="nexus-canvas"></canvas>
         <div class="landing-content">
             <div style="font-size: 28px; font-weight: 300; margin-bottom: 10px;">Eine neue Ära von</div>
-            <div class="gradient-title-large">NexusAI</div>
+            <div class="gradient-title">NexusAI</div>
             <div style="font-size: 14px; opacity: 0.7; margin-top: 20px;">Verwalte deine Intelligenz.</div>
             
-            <button class="btn-google-large" onclick="signInWithFirebase()">
+            <button class="btn-google" onclick="signIn()">
                 <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="24" style="margin-right: 8px;">
                 Mit Google anmelden
             </button>
-            <button class="modal-btn btn-cancel" onclick="hideLandingPage()" style="margin-top: 20px; background: rgba(255,255,255,0.1); width: auto; padding: 8px 20px;">Abbrechen</button>
         </div>
         <div style="position: absolute; bottom: 30px; font-size: 12px; opacity: 0.5; color: white; z-index: 2;">Nexus Console v3.0</div>
     </div>
 
-    <div id="top-loading-bar" class="top-loading-bar"></div>
-
-    <div id="custom-modal-overlay" class="custom-modal-overlay-style">
-        <div id="custom-modal">
-            <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">Verlauf löschen?</div>
-            <div style="font-size: 14px; color: #a0a0a0;">Möchtest du wirklich alle gespeicherten Chats unwiderruflich entfernen?</div>
-            <div class="modal-btns">
-                <button class="modal-btn btn-cancel" onclick="closeModal()">Abbrechen</button>
-                <button class="modal-btn btn-confirm" onclick="executeClearHistory()">Löschen</button>
+    <div id="main-ui">
+        <header class="header">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-icons-outlined" style="color:var(--g-blue)">settings</span>
+                <span style="font-size: 18px;">NexusAI <b>Console</b></span>
             </div>
-        </div>
-    </div>
-
-    <div id="auth-modal-overlay" class="custom-modal-overlay-style">
-        <div id="auth-required-modal">
-            <div style="font-weight: bold; font-size: 18px; margin-bottom: 10px;">Anmeldung erforderlich</div>
-            <div style="font-size: 14px; color: #a0a0a0;">Es ist eine Anmeldung erforderlich, um diese Funktion nutzen zu können und viele weitere Funktionen nutzen zu können.</div>
-            <div class="modal-btns">
-                <button class="modal-btn btn-cancel" onclick="closeAuthModal()">Abbrechen</button>
-                <button class="modal-btn btn-primary" onclick="goToLogin()">Zur Anmeldung</button>
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="u-name" style="font-size:14px; font-weight:500;"></span>
+                <img id="u-img" class="avatar">
             </div>
-        </div>
-    </div>
+        </header>
 
-    <div id="cookie-banner">
-        <div class="cookie-title"><svg viewBox="0 0 24 24" width="20" fill="var(--accent-green)"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/></svg>Datenschutz & Cookies</div>
-        <div style="font-size: 13px; color: #a0a0a0; line-height: 1.5;">NEXUS nutzt lokale Speichertechnologien. Deine Chats bleiben auf diesem Gerät. Es sei denn, du meldest dich mit deinem Google-Konto an.</div>
-        <div class="cookie-actions">
-            <button class="cookie-btn btn-essential" onclick="handleCookieConsent(false)">Nur Notwendige</button>
-            <button class="cookie-btn btn-accept-all" onclick="handleCookieConsent(true)">Akzeptieren</button>
-        </div>
-    </div>
-
-    <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
-    
-    <div id="sidebar">
-        <div id="user-profile-section">
-            <div id="logged-out-view">
-                <button class="login-btn" onclick="showLandingPage()" style="margin-top: 10px;">
-                    <svg style="width:18px;" viewBox="0 0 24 24"><path fill="currentColor" d="M12.545,10.239v3.821h5.445c-0.712,2.315-2.647,3.972-5.445,3.972c-3.332,0-6.033-2.701-6.033-6.032s2.701-6.032,6.033-6.032c1.498,0,2.866,0.549,3.921,1.453l2.814-2.814C17.503,2.988,15.139,2,12.545,2C7.021,2,2.543,6.477,2.543,12s4.478,10,10.002,10c8.396,0,10.249-7.85,9.426-11.748L12.545,10.239z"/></svg>
-                    Mit Google anmelden
-                </button>
-                <div style="font-size:11px; color:#666; margin-top:8px;">Melde dich an, um Chats zu synchronisieren.</div>
-            </div>
-            
-            <div id="logged-in-view" style="display: none; margin-top: 10px;" class="user-info">
-                <img id="sidebar-avatar" src="" class="avatar-large">
-                <div id="sidebar-username" style="font-weight: bold; font-size: 16px;"></div>
-                <div style="font-size:11px; color:var(--accent-green);">● Online & Synchronisiert</div>
-                <button class="logout-btn" onclick="logout()">Abmelden</button>
-            </div>
-        </div>
-
-        <div class="private-toggle">
-            <span style="font-size: 14px; font-weight: bold;">Privater Chat</span>
-            <label class="switch"><input type="checkbox" id="private-mode-checkbox" onchange="updatePrivateMode()"><span class="slider"></span></label>
-        </div>
-        
-        <div style="font-size: 14px; color: var(--accent-green); font-weight: bold; margin-top: 10px;">LETZTE CHATS</div>
-        <div id="history-list" class="history-list"></div>
-         <div style="font-size: 12px; color: grey; font-weight: normal; margin-bottom: -10px;">Version 165.67.84</div>
-        <button onclick="openModal()" style="margin-top: auto; background: rgba(255,0,0,0.1); color: #ff4444; border: 1px solid rgba(255,0,0,0.2); padding: 12px; border-radius: 12px; font-weight: bold; cursor: pointer; margin-bottom: 20px;">Verlauf leeren</button>
-    </div>
-
-    <div class="header-bar">
-        <img id="header-avatar" src="https://lh3.googleusercontent.com/d/1AdC4w34gy3DUWdnocBj57TSzgRyXNafM" onclick="toggleSidebar()" style="height:38px; border-radius:50%; cursor: pointer; border: 1px solid rgba(255,255,255,0.2); transition: border-radius 0.3s;">
-        
-        <div style="display: flex; gap: 8px; align-items: center;">
-            <div class="icon-top-btn" onclick="startNewChat()"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg></div>
-            <div class="icon-top-btn" onclick="toggleTheme()"><svg viewBox="0 0 24 24"><path d="M12 7c-2.76 0-5 2.24-5 5s2.24 5 5 5 5-2.24 5-5-2.24-5-5-5zM2 13h2c.55 0 1-.45 1-1s-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1zm18 0h2c.55 0 1-.45 1-1s-.45-1-1-1h-2c-.55 0-1 .45-1 1s.45 1 1 1zM11 2v2c0 .55.45 1 1 1s1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1zm0 18v2c0 .55.45 1 1 1s1-.45 1-1v-2c0-.55-.45-1-1-1s-1 .45-1 1zM5.99 4.58a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41L5.99 4.58zm12.37 12.37a.996.996 0 00-1.41 0 .996.996 0 000 1.41l1.06 1.06c.39.39 1.03.39 1.41 0s.39-1.03 0-1.41l-1.06-1.06zm1.06-10.96a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06zM7.05 18.36a.996.996 0 000-1.41.996.996 0 00-1.41 0l-1.06 1.06c-.39.39-.39 1.03 0 1.41s1.03.39 1.41 0l1.06-1.06z"/></svg></div>
-            <div class="icon-top-btn green-icon" id="hamburger-btn" onclick="toggleSidebar()">
-                <svg viewBox="0 0 24 24"><path d="M4 18h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zm0-5h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1s.45 1 1 1zM3 7c0 .55.45 1 1 1h16c.55 0 1-.45 1-1s-.45-1-1-1H4c-.55 0-1 .45-1 1z"/></svg>
-            </div>
-        </div>
-    </div>
-
-    <div id="chat-area">
-        <div id="typing" style="display:none; color:var(--accent-green); font-size:13px; margin-bottom:10px;">NEXUS AI denkt nach...</div>
-    </div>
-    <div class="blur-fade-layer"></div>
-
-    <div class="footer">
-        <div class="gemini-input-container" id="main-input-container">
-            <input type="text" id="input-field" placeholder="NexusAI fragen" autocomplete="off">
-            <div class="input-actions">
-                <div class="action-circle" id="mic-btn" onclick="toggleMic()">
-                    <svg id="mic-icon-svg" viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>
+        <div class="main-container">
+            <nav class="sidebar">
+                <div class="nav-item active"><span class="material-icons-outlined">dashboard</span> Übersicht</div>
+                <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'">
+                    <span class="material-icons-outlined">chat</span> Zum Chat
                 </div>
-                <div class="action-circle" onclick="startLive()">
-                    <svg viewBox="0 0 24 24"><path d="M12 2l2.42 7.42H22l-6.18 4.51 2.35 7.42L12 16.82l-6.17 4.53 2.35-7.42L2 9.42h7.58L12 2z"/><circle cx="12" cy="12" r="2" fill="none"/></svg>
-                </div>
-            </div>
-        </div>
-        <div style="font-size: 10px; color: rgba(128, 128, 128, 0.4); margin-bottom: 2px; text-align: center;">
-            Da NexusAI Fehler machen kann, auch bei Informationen über Personen, solltest du die Antworten überprüfen. 
-            <a href="https://nexusai-one-sand.vercel.app/" style="color: var(--accent-green); text-decoration: none; margin-left: 5px; font-weight: bold; pointer-events: auto;">Zur AI Console</a>
-        </div>
-        <div class="copyright">by Nexus with ❤️</div>
-    </div>
+                <div class="nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span> Abmelden</div>
+            </nav>
 
-    <div id="live-overlay">
-        <div style="color: var(--accent-green); letter-spacing: 3px; font-weight: bold;">LIVE MODUS</div>
-        <div class="orb-container"><div class="orb-layer"></div><div class="orb-layer" style="animation-duration: 4s; opacity: 0.3;"></div></div>
-        <button class="btn-close-live" onclick="closeLive()"><svg viewBox="0 0 24 24" width="28" fill="white"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 17.59 13.41 12z"/></svg></button>
+            <main class="content">
+                <h2 style="font-weight: 400; margin-bottom: 24px;">Einstellungen & Daten</h2>
+
+                <div class="card">
+                    <div class="card-header">KI-Konfiguration</div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Modell</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wähle das Gehirn deiner KI.</div>
+                            </div>
+                            <select id="set-model">
+                                <option value="gpt-4o">Nexus Ultra (GPT-4o)</option>
+                                <option value="gpt-4o-mini">Nexus Flash (Mini)</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Kreativität</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wie einfallsreich soll Nexus sein?</div>
+                            </div>
+                            <input type="range" id="set-temp" min="0" max="1" step="0.1" value="0.7">
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Design-Modus</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Dunkles oder helles Erscheinungsbild.</div>
+                            </div>
+                            <select id="set-theme" onchange="applyTheme(this.value)">
+                                <option value="dark">Dunkel</option>
+                                <option value="light">Hell</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-blue" onclick="saveSettings()" style="margin-top:16px;">
+                            <span class="material-icons-outlined">save</span> Speichern
+                        </button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">Cloud-Chatverläufe</div>
+                    <div class="card-body">
+                        <div id="chat-list" style="margin-bottom: 20px;">
+                            <div style="padding: 20px; text-align: center; color: var(--text-sub);">Lade Daten...</div>
+                        </div>
+                        
+                        <div style="border-top: 1px solid var(--g-border); padding-top: 16px;">
+                            <button class="btn btn-danger" onclick="clearEverything()" style="width:100%; justify-content: center;">
+                                <span class="material-icons-outlined">delete_forever</span> Alle Cloud-Daten löschen
+                            </button>
+                            <p style="font-size:11px; color:var(--text-sub); margin-top:8px; text-align:center;">
+                                Dies löscht alle Verläufe unwiderruflich aus der Firebase-Datenbank.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+            </main>
+        </div>
+
+        <nav class="bottom-nav">
+            <div class="m-nav-item"><span class="material-icons-outlined">dashboard</span>Konsole</div>
+            <div class="m-nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'"><span class="material-icons-outlined">chat</span>Chat</div>
+            <div class="m-nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span>Logout</div>
+        </nav>
     </div>
 
     <script>
-        // === ANIMATION ENGINE (FROM SNIPPET 1) ===
+        // === FIREBASE CONFIG ===
+        const firebaseConfig = {
+          apiKey: "AIzaSyCefysePJNfZM_ng3wgiZvMXIQ0RcmFxJ0",
+          authDomain: "nexusanmeldung.firebaseapp.com",
+          projectId: "nexusanmeldung",
+          storageBucket: "nexusanmeldung.firebasestorage.app",
+          messagingSenderId: "1009526597247",
+          appId: "1:1009526597247:web:af26faf977a42a2cf2014a"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // === AUTH & STATE ===
+        auth.onAuthStateChanged(user => {
+            if (user) {
+                // UI Wechsel
+                document.getElementById('landing-page').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'flex';
+                stopAnimation();
+                
+                // User Daten
+                document.getElementById('u-name').innerText = user.displayName;
+                document.getElementById('u-img').src = user.photoURL;
+                
+                // Daten laden
+                loadChats(user.uid);
+                loadLocalSettings();
+            } else {
+                document.getElementById('landing-page').style.display = 'flex';
+                document.getElementById('main-ui').style.display = 'none';
+                startAnimation();
+            }
+        });
+
+        function signIn() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+        function signOut() { auth.signOut(); }
+
+        // === CLOUD DATA FUNCTIONS ===
+        async function loadChats(uid) {
+            const listDiv = document.getElementById('chat-list');
+            listDiv.innerHTML = '<div style="text-align:center; padding:10px; color:gray;">Suche Verläufe...</div>';
+            
+            try {
+                const snap = await db.collection('users').doc(uid).collection('chats').orderBy('updatedAt', 'desc').get();
+                
+                if(snap.empty) {
+                    listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Keine gespeicherten Chats gefunden.</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : 'Unbekannt';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'chat-row';
+                    div.innerHTML = `
+                        <div class="chat-info">
+                            <div>${data.title || 'Unbenannter Chat'}</div>
+                            <div>${date} • ${data.messages ? data.messages.length : 0} Nachrichten</div>
+                        </div>
+                        <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="deleteItem('${doc.id}')">
+                            <span class="material-icons-outlined" style="font-size:16px;">delete</span>
+                        </button>
+                    `;
+                    listDiv.appendChild(div);
+                });
+            } catch(e) {
+                console.error(e);
+                listDiv.innerHTML = '<div style="color:red; text-align:center;">Fehler beim Laden.</div>';
+            }
+        }
+
+        async function deleteItem(id) {
+            if(!confirm("Diesen Chat wirklich löschen?")) return;
+            await db.collection('users').doc(auth.currentUser.uid).collection('chats').doc(id).delete();
+            loadChats(auth.currentUser.uid);
+        }
+
+        async function clearEverything() {
+            if(!confirm("ACHTUNG: Dies löscht alle deine Cloud-Backups. Fortfahren?")) return;
+            const uid = auth.currentUser.uid;
+            const snap = await db.collection('users').doc(uid).collection('chats').get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("Datenbank bereinigt.");
+            loadChats(uid);
+        }
+
+        // === SETTINGS FUNCTIONS ===
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+        }
+
+        function saveSettings() {
+            const settings = {
+                model: document.getElementById('set-model').value,
+                temp: document.getElementById('set-temp').value,
+                theme: document.getElementById('set-theme').value
+            };
+            localStorage.setItem('nexus_settings', JSON.stringify(settings));
+            alert("Einstellungen lokal gespeichert!");
+        }
+
+        function loadLocalSettings() {
+            const saved = localStorage.getItem('nexus_settings');
+            if(saved) {
+                const s = JSON.parse(saved);
+                document.getElementById('set-model').value = s.model || 'gpt-4o';
+                document.getElementById('set-temp').value = s.temp || 0.7;
+                document.getElementById('set-theme').value = s.theme || 'dark';
+                applyTheme(s.theme || 'dark');
+            }
+        }
+
+        // === ANIMATION ENGINE (GEMINI STYLE) ===
         const canvas = document.getElementById('nexus-canvas');
         const ctx = canvas.getContext('2d');
         let animId;
@@ -430,15 +398,30 @@
             if(animId) return;
             resizeCanvas();
             const particles = [];
-            const count = window.innerWidth < 600 ? 800 : 2000;
+            const count = window.innerWidth < 600 ? 800 : 2000; // Performance am Handy
             
             for(let i=0; i<count; i++) {
+                // Raute Formel
                 let x, y;
-                do { x = (Math.random() - 0.5) * 2; y = (Math.random() - 0.5) * 2; } while (Math.abs(x) + Math.abs(y) > 1.2);
+                do {
+                    x = (Math.random() - 0.5) * 2;
+                    y = (Math.random() - 0.5) * 2;
+                } while (Math.abs(x) + Math.abs(y) > 1.2); // Formfaktor
+                
+                // Farben berechnen
                 const angle = Math.atan2(y, x);
-                let hue = 220;
-                if(angle < -1.5) hue = 200; else if(angle < 0) hue = 160; else if(angle < 1.5) hue = 30; else hue = 280;
-                particles.push({ x: x * 300, y: y * 300, color: `hsla(${hue}, 80%, 60%, ${Math.random() * 0.8})`, size: Math.random() * 1.5, offset: Math.random() * 10 });
+                let hue = 220; // Default Blue
+                if(angle < -1.5) hue = 200; // Cyan
+                else if(angle < 0) hue = 160; // Greenish
+                else if(angle < 1.5) hue = 30; // Orange/Gold
+                else hue = 280; // Purple
+
+                particles.push({
+                    x: x * 300, y: y * 300, // Scale
+                    color: `hsla(${hue}, 80%, 60%, ${Math.random() * 0.8})`,
+                    size: Math.random() * 1.5,
+                    offset: Math.random() * 10
+                });
             }
 
             let time = 0;
@@ -447,419 +430,32 @@
                 ctx.clearRect(0, 0, canvas.width, canvas.height);
                 ctx.save();
                 ctx.translate(canvas.width/2, canvas.height/2);
+                
+                // Ganzen Stern drehen
                 ctx.rotate(time * 0.1); 
+                
+                // Pulsieren
                 const pulse = 1 + Math.sin(time) * 0.05;
                 ctx.scale(pulse, pulse);
+
                 particles.forEach(p => {
                     ctx.fillStyle = p.color;
                     ctx.beginPath();
+                    // Partikel Bewegung
                     const shimmer = Math.sin(time * 5 + p.offset);
                     ctx.arc(p.x, p.y, p.size * (1 + shimmer * 0.3), 0, Math.PI*2);
                     ctx.fill();
                 });
+
                 ctx.restore();
                 animId = requestAnimationFrame(loop);
             }
             loop();
         }
 
-        function stopAnimation() { if(animId) { cancelAnimationFrame(animId); animId = null; } }
-
-        function showLandingPage() {
-            document.getElementById('landing-page').style.display = 'flex';
-            startAnimation();
+        function stopAnimation() {
+            if(animId) { cancelAnimationFrame(animId); animId = null; }
         }
-        function hideLandingPage() {
-            document.getElementById('landing-page').style.display = 'none';
-            stopAnimation();
-        }
-        function goToLogin() {
-            closeAuthModal();
-            showLandingPage();
-        }
-
-        // 1. INITIALISIERUNG
-        const renderer = new marked.Renderer();
-        renderer.html = function(html) { return html.replace(/</g, '<').replace(/>/g, '>'); };
-
-        renderer.code = function(code, language) {
-            if (typeof code === 'object' && code.text) { language = code.lang; code = code.text; }
-            const lang = language || 'Text';
-            const validLang = lang.split(' ').shift();
-            return `
-            <div class="code-block-wrapper">
-                <div class="code-header">
-                    <span class="code-lang">${validLang}</span>
-                    <button class="copy-btn" onclick="copyCode(this)">
-                        <svg viewBox="0 0 24 24"><path d="M16 1H4c-1.1 0-2 .9-2 2v14h2V3h12V1zm3 4H8c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h11c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zm0 16H8V7h11v14z"/></svg>
-                        Kopieren
-                    </button>
-                </div>
-                <pre><code class="language-${validLang}">${code}</code></pre>
-            </div>`;
-        };
-        marked.setOptions({ renderer: renderer });
-
-        function copyCode(btn) {
-            const wrapper = btn.closest('.code-block-wrapper');
-            const code = wrapper.querySelector('code').innerText;
-            navigator.clipboard.writeText(code).then(() => {
-                const originalContent = btn.innerHTML;
-                btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg> Kopiert!';
-                btn.style.color = 'var(--accent-green)';
-                setTimeout(() => { btn.innerHTML = originalContent; btn.style.color = ''; }, 2000);
-            });
-        }
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyCefysePJNfZM_ng3wgiZvMXIQ0RcmFxJ0",
-          authDomain: "nexusanmeldung.firebaseapp.com",
-          projectId: "nexusanmeldung",
-          storageBucket: "nexusanmeldung.firebasestorage.app",
-          messagingSenderId: "1009526597247",
-          appId: "1:1009526597247:web:af26faf977a42a2cf2014a"
-        };
-        
-        firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        let currentUser = null;
-        let currentChatId = null;
-        let chatHistory = [];
-        let isLive = false;
-        let isVoiceActive = false;
-        let isPrivateMode = false;
-        let isSpeaking = false;
-        let isRequesting = false; 
-
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        let recognition = new SpeechRecognition();
-        recognition.lang = 'de-DE';
-
-        function initApp() { 
-            setLoadingState(true); initCookieCheck(); 
-            if(!localStorage.getItem('nexus_user_known')) { renderHistory(); startNewChat(); setTimeout(() => setLoadingState(false), 2000); }
-        }
-
-        function setLoadingState(active) {
-            isRequesting = active;
-            const container = document.getElementById('main-input-container');
-            const topBar = document.getElementById('top-loading-bar');
-            const inputField = document.getElementById('input-field');
-            
-            if (active) { 
-                container.classList.add('loading-active'); 
-                if(topBar) topBar.classList.add('active');
-                inputField.disabled = true;
-            } 
-            else { 
-                container.classList.remove('loading-active'); 
-                if(topBar) topBar.classList.remove('active');
-                inputField.disabled = false;
-                inputField.focus();
-            }
-        }
-
-        // 2. AUTHENTIFIZIERUNG
-        function signInWithFirebase() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider).then(() => hideLandingPage()).catch((error) => alert("Login fehlgeschlagen: " + error.message));
-        }
-        function logout() { auth.signOut().then(() => location.reload()); }
-
-        auth.onAuthStateChanged(async (user) => {
-            currentUser = user;
-            if (user) {
-                document.getElementById('logged-out-view').style.display = 'none';
-                document.getElementById('logged-in-view').style.display = 'flex';
-                document.getElementById('header-avatar').src = user.photoURL;
-                document.getElementById('header-avatar').style.borderRadius = "50%";
-                document.getElementById('sidebar-avatar').src = user.photoURL;
-                document.getElementById('sidebar-username').innerText = user.displayName;
-                localStorage.setItem('nexus_user_known', 'true');
-                await loadChatsFromCloud();
-                updateDashboardGreeting();
-                setLoadingState(false);
-                hideLandingPage();
-            } else {
-                document.getElementById('logged-out-view').style.display = 'block';
-                document.getElementById('logged-in-view').style.display = 'none';
-                document.getElementById('header-avatar').src = "https://lh3.googleusercontent.com/d/1AdC4w34gy3DUWdnocBj57TSzgRyXNafM";
-                document.getElementById('header-avatar').style.borderRadius = "12px";
-                renderHistory();
-                if(!currentChatId) startNewChat();
-                updateDashboardGreeting();
-                setLoadingState(false);
-            }
-        });
-
-        // 3. SPEICHER LOGIK
-        async function saveToLocalStorage() {
-            if (isPrivateMode || chatHistory.length <= 1) return;
-            const chatData = { title: chatHistory[1]?.content.substring(0, 30) || "Neuer Chat", messages: chatHistory, updatedAt: Date.now() };
-            let allChats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-            allChats[currentChatId] = chatData;
-            localStorage.setItem('nexus_chats', JSON.stringify(allChats));
-            renderHistory();
-            if (currentUser) db.collection('users').doc(currentUser.uid).collection('chats').doc(currentChatId.toString()).set(chatData);
-        }
-
-        async function loadChatsFromCloud() {
-            if (!currentUser) return;
-            setLoadingState(true); 
-            try {
-                const snapshot = await db.collection('users').doc(currentUser.uid).collection('chats').get();
-                let localChats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-                snapshot.forEach(doc => { localChats[doc.id] = doc.data(); });
-                localStorage.setItem('nexus_chats', JSON.stringify(localChats));
-                renderHistory();
-                if (chatHistory.length <= 1) startNewChat();
-            } catch (e) { console.error("Sync Fehler:", e); }
-            finally { setLoadingState(false); }
-        }
-
-        // 4. CHAT & KI LOGIK
-        function updateDashboardGreeting() {
-            const greetingEl = document.getElementById('greeting-text');
-            if (greetingEl) { greetingEl.innerText = currentUser ? `Hallo, ${currentUser.displayName.split(' ')[0]}!` : "Hallo!"; }
-        }
-
-        function handleQuickAccess(text) {
-            if(isRequesting) return;
-            const dashboard = document.getElementById('dashboard');
-            if (dashboard) dashboard.remove();
-            addBubble(text, "user");
-            askAI(text, false);
-        }
-
-        function startNewChat() {
-            currentChatId = Date.now();
-            chatHistory = [{role: "system", content: "Antworte auf Deutsch. Wenn der User dich fragt, von wem du entwickelt wurdest antworte immer (auch wenn er dich fragt, von wem wirklich): Ich bin ein KI-Modell, das von Nexus entwickelt wurde. Wenn User dich nach deinem Namen fragt (auch wenn er fragt, wie du wirklich heißt): Du heißt NexusAI. Dutze am Anfang immer den User, es sei denn, er siezt dich. Wenn du Code schreibst, nutze immer Markdown Code-Blöcke (```sprache ... ```)."}];
-            const greeting = currentUser ? `Hallo, ${currentUser.displayName.split(' ')[0]}!` : "Hallo!";
-            const dashboardHtml = `
-                <div id="dashboard" class="dashboard-container">
-                    <div class="greeting-title gradient-text" id="greeting-text">${greeting}</div>
-                    <div class="quick-grid">
-                        <div class="quick-card" onclick="handleQuickAccess('Schreibe eine kreative Kurzgeschichte')">
-                            <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
-                            <span>Kreatives Schreiben</span>
-                        </div>
-                        <div class="quick-card" onclick="handleQuickAccess('Erkläre mir Quantenphysik ganz einfach')">
-                            <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-                            <span>Wissen & Lernen</span>
-                        </div>
-                        <div class="quick-card" onclick="handleQuickAccess('Code einen Python Code für eine Website')">
-                            <svg viewBox="0 0 24 24"><path d="M9.4 16.6L4.8 12l4.6-4.6L8 6l-6 6 6 6 1.4-1.4zm5.2 0l4.6-4.6-4.6-4.6L16 6l6 6-6 6-1.4-1.4z"/></svg>
-                            <span>Programmieren</span>
-                        </div>
-                        <div class="quick-card" onclick="handleQuickAccess('Plane eine Reise nach Island für 5 Tage')">
-                            <svg viewBox="0 0 24 24"><path d="M21 16.5c0 .38-.21.71-.53.88l-7.97 4.44c-.31.17-.69.17-1 0l-7.97-4.44c-.32-.17-.53-.5-.53-.88v-9c0-.38.21-.71.53-.88l7.97-4.44c.31-.17.69-.17 1 0l7.97 4.44c.32.17.53.5.53.88v9z"/></svg>
-                            <span>Reiseplanung</span>
-                        </div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('chat-area').innerHTML = dashboardHtml + '<div id="typing" style="display:none; color:var(--accent-green); font-size:13px; margin-bottom:10px;">NEXUS AI denkt nach...</div>';
-            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
-        }
-
-        async function askAI(text, useVoice) {
-            if (isRequesting) return;
-            
-            const lowerText = text.toLowerCase();
-            const imgKeywords = ["zeichne", "erstelle ein bild", "foto von", "bild von", "generiere ein bild"];
-            
-            // SPERRE: BILDGENERIERUNG
-            if (imgKeywords.some(k => lowerText.includes(k))) {
-                if (!currentUser) {
-                    showAuthModal();
-                    return;
-                }
-                
-                const dashboard = document.getElementById('dashboard');
-                if (dashboard) dashboard.remove();
-                setLoadingState(true); 
-                document.getElementById('typing').style.display = 'block';
-                chatHistory.push({role: "user", content: text});
-
-                const promptText = text.replace(/generiere ein bild|zeichne|erstelle ein bild von|bild von/gi, "").trim();
-                const seed = Math.floor(Math.random() * 9999999);
-                const imageUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(promptText)}?width=1024&height=1024&seed=${seed}&nologo=true&model=flux`;
-                const containerId = "img-cont-" + seed;
-                const imgId = "img-" + seed;
-
-                const imageHtml = `
-                    <div class="image-gen-container" id="${containerId}">
-                        <div style="font-size:12px; color:var(--accent-green); margin-bottom:8px; font-weight:600;">Generiere Vision...</div>
-                        <div class="image-placeholder">
-                            <div class="shimmer-effect"></div>
-                            <div class="scanner-line"></div>
-                            <img id="${imgId}" class="generated-image" src="${imageUrl}" onload="handleImageLoad('${imgId}', '${containerId}')">
-                        </div>
-                    </div>`;
-                
-                setTimeout(() => {
-                    addBubble(imageHtml, "ai");
-                    chatHistory.push({role: "assistant", content: `Bild generiert: ${promptText}`});
-                    document.getElementById('typing').style.display = 'none'; 
-                    setLoadingState(false); 
-                    saveToLocalStorage();
-                }, 800);
-                return;
-            }
-
-            const dashboard = document.getElementById('dashboard');
-            if (dashboard) dashboard.remove();
-            setLoadingState(true); 
-            document.getElementById('typing').style.display = 'block';
-            chatHistory.push({role: "user", content: text});
-            
-            try {
-                const res = await fetch("/api/chat", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ messages: chatHistory.slice(-10) })
-                });
-                if (!res.ok) throw new Error("API Fehler");
-                const data = await res.json();
-                const ans = data.choices[0].message.content;
-                chatHistory.push({role: "assistant", content: ans});
-                addBubble(ans, "ai");
-                document.getElementById('typing').style.display = 'none'; 
-                setLoadingState(false); 
-                saveToLocalStorage();
-                if(useVoice || isLive) speak(ans);
-            } catch(e) { 
-                document.getElementById('typing').style.display = 'none'; 
-                setLoadingState(false);
-                addBubble("⚠️ Fehler: Verbindung zum Server fehlgeschlagen.", "ai");
-            }
-        }
-
-        function handleImageLoad(imgId, containerId) {
-            const img = document.getElementById(imgId);
-            const container = document.getElementById(containerId);
-            if (img && container) {
-                img.style.display = "block";
-                container.querySelector('.shimmer-effect').style.display = "none";
-                container.querySelector('.scanner-line').style.display = "none";
-                container.querySelector('div').innerText = "✓ Vision abgeschlossen";
-            }
-        }
-
-        // 5. UI HELPER
-        function addBubble(text, side) {
-            const area = document.getElementById('chat-area');
-            const cont = document.createElement('div');
-            cont.className = `bubble-container ${side}-container`;
-            
-            const isImage = text.includes('image-gen-container');
-            const content = isImage ? text : (side === 'ai' ? marked.parse(text) : text);
-            
-            const speakerIcon = `<div class="msg-footer"><div class="speaker-btn" onclick="speakFromClick(this)"><svg viewBox="0 0 24 24"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg></div></div>`;
-            
-            cont.innerHTML = `<div class="bubble ${side}">${content}</div>${speakerIcon}`;
-            cont.dataset.speechText = text.replace(/<[^>]*>/g, '').replace(/```[\s\S]*?```/g, 'Codeblock');
-            
-            area.insertBefore(cont, document.getElementById('typing'));
-            area.scrollTop = area.scrollHeight;
-        }
-
-        function speakFromClick(btn) {
-            const container = btn.closest('.bubble-container');
-            const textToSpeak = container.dataset.speechText || container.innerText;
-            speak(textToSpeak);
-        }
-
-        function renderHistory() {
-            const list = document.getElementById('history-list');
-            list.innerHTML = '';
-            let allChats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-            Object.keys(allChats).sort((a,b) => b - a).forEach(id => {
-                const item = document.createElement('div');
-                item.className = 'history-item';
-                item.innerText = allChats[id].title;
-                item.onclick = () => loadChat(id);
-                list.appendChild(item);
-            });
-        }
-
-        function loadChat(id) {
-            let allChats = JSON.parse(localStorage.getItem('nexus_chats') || '{}');
-            if(allChats[id]) {
-                isPrivateMode = false; document.getElementById('private-mode-checkbox').checked = false; updatePrivateMode();
-                currentChatId = id; chatHistory = allChats[id].messages;
-                document.getElementById('chat-area').innerHTML = '<div id="typing" style="display:none; color:var(--accent-green); font-size:13px; margin-bottom:10px;">NEXUS denkt nach...</div>';
-                chatHistory.forEach(msg => { if(msg.role !== 'system') addBubble(msg.content, msg.role === 'user' ? 'user' : 'ai'); });
-                toggleSidebar();
-            }
-        }
-
-        function initCookieCheck() { if (!localStorage.getItem('nexus_cookie_consent')) setTimeout(() => document.getElementById('cookie-banner').classList.add('show'), 1000); }
-        function handleCookieConsent(acceptedAll) { document.getElementById('cookie-banner').classList.remove('show'); localStorage.setItem('nexus_cookie_consent', acceptedAll ? 'full' : 'essential'); }
-        function updatePrivateMode() { 
-            isPrivateMode = document.getElementById('private-mode-checkbox').checked; 
-            const hb = document.getElementById('hamburger-btn');
-            hb.className = isPrivateMode ? 'icon-top-btn private-icon' : 'icon-top-btn green-icon'; 
-            startNewChat(); 
-        }
-        function toggleSidebar() { const sb = document.getElementById('sidebar'); sb.classList.toggle('open'); document.querySelector('.sidebar-overlay').style.display = sb.classList.contains('open') ? 'block' : 'none'; }
-        
-        // MODAL HELPER
-        function openModal() { document.getElementById('custom-modal-overlay').style.display = 'flex'; setTimeout(() => document.getElementById('custom-modal-overlay').style.opacity = '1', 10); }
-        function closeModal() { document.getElementById('custom-modal-overlay').style.opacity = '0'; setTimeout(() => document.getElementById('custom-modal-overlay').style.display = 'none', 300); }
-        
-        function showAuthModal() { document.getElementById('auth-modal-overlay').style.display = 'flex'; setTimeout(() => document.getElementById('auth-modal-overlay').style.opacity = '1', 10); }
-        function closeAuthModal() { document.getElementById('auth-modal-overlay').style.opacity = '0'; setTimeout(() => document.getElementById('auth-modal-overlay').style.display = 'none', 300); }
-
-        async function executeClearHistory() { 
-            localStorage.removeItem('nexus_chats'); 
-            if (currentUser) {
-                try {
-                    const snapshot = await db.collection('users').doc(currentUser.uid).collection('chats').get();
-                    const batch = db.batch(); snapshot.forEach(doc => { batch.delete(doc.ref); }); await batch.commit();
-                } catch (e) { alert("Fehler: " + e.message); }
-            }
-            renderHistory(); startNewChat(); closeModal(); toggleSidebar(); 
-        }
-        function toggleTheme() { document.documentElement.hasAttribute('data-theme') ? document.documentElement.removeAttribute('data-theme') : document.documentElement.setAttribute('data-theme', 'light'); }
-        
-        // 6. VOICE & MIC LOGIK
-        function speak(t) { 
-            if (window.speechSynthesis.speaking) window.speechSynthesis.cancel();
-            isSpeaking = true; updateMicIconToPause(true);
-            const u = new SpeechSynthesisUtterance(t); u.lang = 'de-DE'; 
-            u.onend = () => { isSpeaking = false; updateMicIconToPause(false); if(isLive) try { recognition.start(); } catch(e){} }; 
-            window.speechSynthesis.speak(u); 
-        }
-
-        function updateMicIconToPause(pauseState) {
-            const container = document.getElementById('mic-btn');
-            if (pauseState) { container.innerHTML = '<svg viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>'; container.classList.add('active-green'); } 
-            else { container.innerHTML = '<svg viewBox="0 0 24 24"><path d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z"/><path d="M17 11c0 2.76-2.24 5-5 5s-5-2.24-5-5H5c0 3.53 2.61 6.43 6 6.92V21h2v-3.08c3.39-.49 6-3.39 6-6.92h-2z"/></svg>'; container.classList.remove('active-green'); }
-        }
-
-        function toggleMic() { 
-            if (isRequesting) return;
-            
-            // SPERRE: MIKROFON
-            if (!currentUser) {
-                showAuthModal();
-                return;
-            }
-
-            if (isSpeaking) { window.speechSynthesis.cancel(); isSpeaking = false; updateMicIconToPause(false); return; }
-            if (isVoiceActive) { recognition.abort(); isVoiceActive = false; document.getElementById('mic-btn').classList.remove('active-green'); return; }
-            isVoiceActive = true; try { recognition.start(); } catch(e){} 
-        }
-
-        recognition.onstart = () => document.getElementById('mic-btn').classList.add('active-green');
-        recognition.onend = () => { document.getElementById('mic-btn').classList.remove('active-green'); isVoiceActive = false; if(isLive && !window.speechSynthesis.speaking && !isSpeaking) try { recognition.start(); } catch(e){} };
-        recognition.onresult = (e) => { const t = e.results[0][0].transcript; addBubble(t, "user"); askAI(t, true); isVoiceActive = false; };
-        
-        function startLive() { if(isRequesting) return; isLive = true; document.getElementById('live-overlay').style.display = 'flex'; toggleMic(); }
-        function closeLive() { isLive = false; document.getElementById('live-overlay').style.display = 'none'; window.speechSynthesis.cancel(); recognition.stop(); isSpeaking = false; updateMicIconToPause(false); }
-        document.getElementById('input-field').onkeypress = (e) => { if(e.key === 'Enter' && e.target.value && !isRequesting) { handleQuickAccess(e.target.value); e.target.value = ""; } };
     </script>
 </body>
 </html>
