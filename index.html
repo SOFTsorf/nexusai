@@ -15,118 +15,255 @@
     <style>
         :root {
             --g-blue: #1a73e8;
+            --g-red: #d93025;
             --g-bg: #ffffff;
             --g-surface: #ffffff;
             --g-border: #dadce0;
             --text-main: #202124;
             --text-sub: #5f6368;
             --nav-active: #e8f0fe;
+            --card-bg: #ffffff;
         }
 
         body.dark-mode {
-            --g-bg: #000000;
+            --g-bg: #121212;
             --g-surface: #1e1e1e;
             --g-border: #3c4043;
             --text-main: #e8eaed;
             --text-sub: #9aa0a6;
             --nav-active: #3c4043;
+            --card-bg: #202124;
         }
 
         body, html { 
             margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: 'Roboto', sans-serif; 
             background: var(--g-bg); color: var(--text-main);
-            overflow: hidden;
+            overflow: hidden; /* Wichtig für App-Feeling */
         }
 
-        /* --- LANDING PAGE (VINE/GEMINI ANIMATION) --- */
+        /* --- LANDING PAGE (GEMINI STYLE) --- */
         #landing-page {
             position: fixed; inset: 0; background: #000; z-index: 2000;
             display: flex; flex-direction: column; align-items: center; justify-content: center;
+            overflow: hidden;
         }
 
-        /* Der Trick für den flüssigen Effekt: Ein Blur-Filter auf dem Container + Kontrast */
-        .canvas-container {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            filter: blur(20px) contrast(30); /* Erzeugt den "Gooey"-Effekt */
-            background: black;
-            z-index: 1;
-        }
-
-        #nexus-canvas { width: 100%; height: 100%; }
+        #nexus-canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; }
 
         .landing-content {
-            position: relative; z-index: 10; text-align: center; color: white;
-            opacity: 0; animation: fadeIn 2.5s ease-out forwards 0.8s;
+            position: relative; z-index: 2; text-align: center; color: white;
+            display: flex; flex-direction: column; align-items: center;
+            opacity: 0; animation: contentFadeIn 2s ease-out forwards 0.5s;
+            padding: 20px;
         }
 
-        .nexus-star-label {
-            font-size: 48px; font-weight: 500; letter-spacing: -1px;
-            background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570);
+        .gradient-title {
+            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #4285f4);
+            background-size: 200% auto;
             -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 40px;
+            font-weight: 500; font-size: 42px;
+            animation: gradientFlow 5s linear infinite;
         }
-
-        @keyframes fadeIn { from { opacity: 0; transform: scale(0.9); } to { opacity: 1; transform: scale(1); } }
+        
+        @keyframes contentFadeIn { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes gradientFlow { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
 
         .btn-google {
-            padding: 14px 36px; border-radius: 40px; border: none;
-            background: rgba(255, 255, 255, 0.1); color: white;
-            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2);
-            font-size: 16px; cursor: pointer; transition: 0.4s;
+            margin-top: 40px; padding: 12px 32px; border-radius: 30px;
+            background: white; color: black; border: none; font-weight: 500;
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
+            font-size: 16px; transition: 0.3s;
         }
-        .btn-google:hover { background: white; color: black; }
+        .btn-google:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.3); }
 
-        /* --- DASHBOARD (WIE VORHER) --- */
+        /* --- DASHBOARD UI --- */
         #main-ui { display: none; height: 100vh; flex-direction: column; }
-        .header { height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--g-border); background: var(--g-surface); }
+        
+        .header {
+            height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--g-border); background: var(--g-surface);
+            flex-shrink: 0;
+        }
+
         .main-container { display: flex; flex: 1; overflow: hidden; }
-        .sidebar { width: 260px; padding: 20px 10px; border-right: 1px solid var(--g-border); }
-        .content { flex: 1; padding: 40px; overflow-y: auto; background: var(--g-bg); }
-        .card { border: 1px solid var(--g-border); border-radius: 12px; margin-bottom: 24px; background: var(--g-surface); padding: 24px; }
-        .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 24px; cursor: pointer; margin-bottom: 4px; transition: 0.2s; }
+        
+        /* SIDEBAR */
+        .sidebar { width: 280px; padding: 24px 12px; border-right: 1px solid var(--g-border); display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 0 24px 24px 0; cursor: pointer; color: var(--text-main);
+            text-decoration: none; font-size: 14px; font-weight: 500;
+        }
+        .nav-item:hover { background: var(--g-border); }
         .nav-item.active { background: var(--nav-active); color: var(--g-blue); }
+
+        /* CONTENT AREA */
+        .content { flex: 1; padding: 40px; overflow-y: auto; background: var(--g-bg); max-width: 900px; margin: 0 auto; width: 100%; }
+        
+        .card {
+            border: 1px solid var(--g-border); border-radius: 12px;
+            margin-bottom: 24px; background: var(--card-bg); overflow: hidden;
+        }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid var(--g-border); font-weight: 500; background: var(--g-surface); }
+        .card-body { padding: 20px 24px; }
+
+        .setting-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 16px 0; border-bottom: 1px solid var(--g-border);
+        }
+        .setting-row:last-child { border: none; }
+
+        /* INPUTS & BUTTONS */
+        select, input[type="range"] {
+            padding: 8px 12px; border-radius: 8px; border: 1px solid var(--g-border);
+            background: var(--g-surface); color: var(--text-main); outline: none;
+        }
+        
+        .btn {
+            padding: 10px 20px; border-radius: 20px; border: 1px solid var(--g-border);
+            background: var(--g-surface); color: var(--text-main); cursor: pointer;
+            font-weight: 500; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s;
+        }
+        .btn:hover { background: var(--g-border); }
+        .btn-blue { background: var(--g-blue); color: white; border: none; }
+        .btn-danger { color: var(--g-red); border-color: var(--g-border); }
+
+        /* CHAT LIST STYLES */
+        .chat-row {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid var(--g-border);
+        }
+        .chat-row:last-child { border-bottom: none; }
+        .chat-info div:first-child { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
+        .chat-info div:last-child { font-size: 12px; color: var(--text-sub); }
+
+        /* MOBILE OPTIMIZATION */
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: 64px; background: var(--g-surface); border-top: 1px solid var(--g-border);
+            justify-content: space-around; align-items: center; z-index: 100;
+        }
+        .m-nav-item { display: flex; flex-direction: column; align-items: center; font-size: 10px; color: var(--text-sub); gap: 4px; }
+        
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .bottom-nav { display: flex; }
+            .content { padding: 20px; padding-bottom: 80px; }
+            .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
+            select { width: 100%; }
+        }
+
         .avatar { width: 32px; height: 32px; border-radius: 50%; }
     </style>
 </head>
 <body class="dark-mode">
 
     <div id="landing-page">
-        <div class="canvas-container">
-            <canvas id="nexus-canvas"></canvas>
-        </div>
+        <canvas id="nexus-canvas"></canvas>
         <div class="landing-content">
-            <div class="nexus-star-label">NexusAI</div>
-            <button class="btn-google" onclick="signIn()">Konsole öffnen</button>
+            <div style="font-size: 28px; font-weight: 300; margin-bottom: 10px;">Eine neue Ära von</div>
+            <div class="gradient-title">NexusAI</div>
+            <div style="font-size: 14px; opacity: 0.7; margin-top: 20px;">Verwalte deine Intelligenz.</div>
+            
+            <button class="btn-google" onclick="signIn()">
+                <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="24" style="margin-right: 8px;">
+                Mit Google anmelden
+            </button>
         </div>
+        <div style="position: absolute; bottom: 30px; font-size: 12px; opacity: 0.5; color: white; z-index: 2;">Nexus Console v3.0</div>
     </div>
 
     <div id="main-ui">
         <header class="header">
-            <div style="display:flex; align-items:center; gap:8px;">
-                <span class="material-icons-outlined" style="color:var(--g-blue)">auto_awesome</span>
-                <span>NexusAI <b>Console</b></span>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span class="material-icons-outlined" style="color:var(--g-blue)">settings</span>
+                <span style="font-size: 18px;">NexusAI <b>Console</b></span>
             </div>
-            <img id="u-img" class="avatar">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <span id="u-name" style="font-size:14px; font-weight:500;"></span>
+                <img id="u-img" class="avatar">
+            </div>
         </header>
+
         <div class="main-container">
             <nav class="sidebar">
-                <div class="nav-item active"><span class="material-icons-outlined">settings</span> Dashboard</div>
-                <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'"><span class="material-icons-outlined">chat</span> Chat App</div>
+                <div class="nav-item active"><span class="material-icons-outlined">dashboard</span> Übersicht</div>
+                <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'">
+                    <span class="material-icons-outlined">chat</span> Zum Chat
+                </div>
                 <div class="nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span> Abmelden</div>
             </nav>
+
             <main class="content">
+                <h2 style="font-weight: 400; margin-bottom: 24px;">Einstellungen & Daten</h2>
+
                 <div class="card">
-                    <h3>Willkommen zurück</h3>
-                    <p>Hier kannst du alle deine NexusAI-Daten und Cloud-Chats verwalten.</p>
-                    <div id="cloud-status" style="margin-top:20px; font-size: 14px; color: var(--text-sub);">Lade Cloud-Daten...</div>
+                    <div class="card-header">KI-Konfiguration</div>
+                    <div class="card-body">
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Modell</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wähle das Gehirn deiner KI.</div>
+                            </div>
+                            <select id="set-model">
+                                <option value="gpt-4o">Nexus Ultra (GPT-4o)</option>
+                                <option value="gpt-4o-mini">Nexus Flash (Mini)</option>
+                            </select>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Kreativität</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wie einfallsreich soll Nexus sein?</div>
+                            </div>
+                            <input type="range" id="set-temp" min="0" max="1" step="0.1" value="0.7">
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <div style="font-weight:500;">Design-Modus</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Dunkles oder helles Erscheinungsbild.</div>
+                            </div>
+                            <select id="set-theme" onchange="applyTheme(this.value)">
+                                <option value="dark">Dunkel</option>
+                                <option value="light">Hell</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-blue" onclick="saveSettings()" style="margin-top:16px;">
+                            <span class="material-icons-outlined">save</span> Speichern
+                        </button>
+                    </div>
                 </div>
+
+                <div class="card">
+                    <div class="card-header">Cloud-Chatverläufe</div>
+                    <div class="card-body">
+                        <div id="chat-list" style="margin-bottom: 20px;">
+                            <div style="padding: 20px; text-align: center; color: var(--text-sub);">Lade Daten...</div>
+                        </div>
+                        
+                        <div style="border-top: 1px solid var(--g-border); padding-top: 16px;">
+                            <button class="btn btn-danger" onclick="clearEverything()" style="width:100%; justify-content: center;">
+                                <span class="material-icons-outlined">delete_forever</span> Alle Cloud-Daten löschen
+                            </button>
+                            <p style="font-size:11px; color:var(--text-sub); margin-top:8px; text-align:center;">
+                                Dies löscht alle Verläufe unwiderruflich aus der Firebase-Datenbank.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
             </main>
         </div>
+
+        <nav class="bottom-nav">
+            <div class="m-nav-item"><span class="material-icons-outlined">dashboard</span>Konsole</div>
+            <div class="m-nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'"><span class="material-icons-outlined">chat</span>Chat</div>
+            <div class="m-nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span>Logout</div>
+        </nav>
     </div>
 
     <script>
-        // === FIREBASE ===
+        // === FIREBASE CONFIG ===
         const firebaseConfig = {
           apiKey: "AIzaSyCefysePJNfZM_ng3wgiZvMXIQ0RcmFxJ0",
           authDomain: "nexusanmeldung.firebaseapp.com",
@@ -137,91 +274,186 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
+        const db = firebase.firestore();
 
+        // === AUTH & STATE ===
         auth.onAuthStateChanged(user => {
             if (user) {
+                // UI Wechsel
                 document.getElementById('landing-page').style.display = 'none';
                 document.getElementById('main-ui').style.display = 'flex';
+                stopAnimation();
+                
+                // User Daten
+                document.getElementById('u-name').innerText = user.displayName;
                 document.getElementById('u-img').src = user.photoURL;
-                stopAnim();
+                
+                // Daten laden
+                loadChats(user.uid);
+                loadLocalSettings();
             } else {
                 document.getElementById('landing-page').style.display = 'flex';
                 document.getElementById('main-ui').style.display = 'none';
-                startAnim();
+                startAnimation();
             }
         });
 
         function signIn() { auth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
         function signOut() { auth.signOut(); }
 
-        // === ORGANIC MORPH ANIMATION (GEMINI STYLE) ===
+        // === CLOUD DATA FUNCTIONS ===
+        async function loadChats(uid) {
+            const listDiv = document.getElementById('chat-list');
+            listDiv.innerHTML = '<div style="text-align:center; padding:10px; color:gray;">Suche Verläufe...</div>';
+            
+            try {
+                const snap = await db.collection('users').doc(uid).collection('chats').orderBy('updatedAt', 'desc').get();
+                
+                if(snap.empty) {
+                    listDiv.innerHTML = '<div style="text-align:center; padding:20px; color:gray;">Keine gespeicherten Chats gefunden.</div>';
+                    return;
+                }
+
+                listDiv.innerHTML = '';
+                snap.forEach(doc => {
+                    const data = doc.data();
+                    const date = data.updatedAt ? new Date(data.updatedAt).toLocaleDateString() : 'Unbekannt';
+                    
+                    const div = document.createElement('div');
+                    div.className = 'chat-row';
+                    div.innerHTML = `
+                        <div class="chat-info">
+                            <div>${data.title || 'Unbenannter Chat'}</div>
+                            <div>${date} • ${data.messages ? data.messages.length : 0} Nachrichten</div>
+                        </div>
+                        <button class="btn" style="padding: 6px 12px; font-size: 12px;" onclick="deleteItem('${doc.id}')">
+                            <span class="material-icons-outlined" style="font-size:16px;">delete</span>
+                        </button>
+                    `;
+                    listDiv.appendChild(div);
+                });
+            } catch(e) {
+                console.error(e);
+                listDiv.innerHTML = '<div style="color:red; text-align:center;">Fehler beim Laden.</div>';
+            }
+        }
+
+        async function deleteItem(id) {
+            if(!confirm("Diesen Chat wirklich löschen?")) return;
+            await db.collection('users').doc(auth.currentUser.uid).collection('chats').doc(id).delete();
+            loadChats(auth.currentUser.uid);
+        }
+
+        async function clearEverything() {
+            if(!confirm("ACHTUNG: Dies löscht alle deine Cloud-Backups. Fortfahren?")) return;
+            const uid = auth.currentUser.uid;
+            const snap = await db.collection('users').doc(uid).collection('chats').get();
+            const batch = db.batch();
+            snap.forEach(doc => batch.delete(doc.ref));
+            await batch.commit();
+            alert("Datenbank bereinigt.");
+            loadChats(uid);
+        }
+
+        // === SETTINGS FUNCTIONS ===
+        function applyTheme(theme) {
+            document.body.classList.toggle('dark-mode', theme === 'dark');
+        }
+
+        function saveSettings() {
+            const settings = {
+                model: document.getElementById('set-model').value,
+                temp: document.getElementById('set-temp').value,
+                theme: document.getElementById('set-theme').value
+            };
+            localStorage.setItem('nexus_settings', JSON.stringify(settings));
+            alert("Einstellungen lokal gespeichert!");
+        }
+
+        function loadLocalSettings() {
+            const saved = localStorage.getItem('nexus_settings');
+            if(saved) {
+                const s = JSON.parse(saved);
+                document.getElementById('set-model').value = s.model || 'gpt-4o';
+                document.getElementById('set-temp').value = s.temp || 0.7;
+                document.getElementById('set-theme').value = s.theme || 'dark';
+                applyTheme(s.theme || 'dark');
+            }
+        }
+
+        // === ANIMATION ENGINE (GEMINI STYLE) ===
         const canvas = document.getElementById('nexus-canvas');
         const ctx = canvas.getContext('2d');
         let animId;
-
-        function resize() {
+        
+        function resizeCanvas() {
             canvas.width = window.innerWidth;
             canvas.height = window.innerHeight;
         }
-        window.addEventListener('resize', resize);
-        resize();
+        window.addEventListener('resize', resizeCanvas);
 
-        class Particle {
-            constructor() {
-                this.init();
-            }
-            init() {
-                this.x = canvas.width / 2;
-                this.y = canvas.height / 2;
-                this.radius = Math.random() * 40 + 20;
-                this.angle = Math.random() * Math.PI * 2;
-                this.speed = Math.random() * 0.02 + 0.01;
-                this.dist = Math.random() * 100 + 50;
-                // Gemini Farben
-                const colors = ['#4285f4', '#9b72cb', '#d96570', '#f4b400'];
-                this.color = colors[Math.floor(Math.random() * colors.length)];
-            }
-            update(t) {
-                this.angle += this.speed;
-                // Organische Bewegung durch Sinus/Cosinus
-                const xMod = Math.cos(this.angle + t) * this.dist;
-                const yMod = Math.sin(this.angle * 0.8 + t) * this.dist;
+        function startAnimation() {
+            if(animId) return;
+            resizeCanvas();
+            const particles = [];
+            const count = window.innerWidth < 600 ? 800 : 2000; // Performance am Handy
+            
+            for(let i=0; i<count; i++) {
+                // Raute Formel
+                let x, y;
+                do {
+                    x = (Math.random() - 0.5) * 2;
+                    y = (Math.random() - 0.5) * 2;
+                } while (Math.abs(x) + Math.abs(y) > 1.2); // Formfaktor
                 
-                // Rotation des gesamten Systems
-                const rotX = xMod * Math.cos(t * 0.2) - yMod * Math.sin(t * 0.2);
-                const rotY = xMod * Math.sin(t * 0.2) + yMod * Math.cos(t * 0.2);
+                // Farben berechnen
+                const angle = Math.atan2(y, x);
+                let hue = 220; // Default Blue
+                if(angle < -1.5) hue = 200; // Cyan
+                else if(angle < 0) hue = 160; // Greenish
+                else if(angle < 1.5) hue = 30; // Orange/Gold
+                else hue = 280; // Purple
 
-                this.drawX = canvas.width / 2 + rotX;
-                this.drawY = canvas.height / 2 + rotY;
+                particles.push({
+                    x: x * 300, y: y * 300, // Scale
+                    color: `hsla(${hue}, 80%, 60%, ${Math.random() * 0.8})`,
+                    size: Math.random() * 1.5,
+                    offset: Math.random() * 10
+                });
             }
-            draw() {
-                ctx.fillStyle = this.color;
-                ctx.beginPath();
-                ctx.arc(this.drawX, this.drawY, this.radius, 0, Math.PI * 2);
-                ctx.fill();
-            }
-        }
 
-        const particles = Array.from({length: 12}, () => new Particle());
-
-        function startAnim() {
             let time = 0;
             function loop() {
-                time += 0.01;
-                ctx.fillStyle = 'black';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                time += 0.005;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                ctx.save();
+                ctx.translate(canvas.width/2, canvas.height/2);
+                
+                // Ganzen Stern drehen
+                ctx.rotate(time * 0.1); 
+                
+                // Pulsieren
+                const pulse = 1 + Math.sin(time) * 0.05;
+                ctx.scale(pulse, pulse);
 
                 particles.forEach(p => {
-                    p.update(time);
-                    p.draw();
+                    ctx.fillStyle = p.color;
+                    ctx.beginPath();
+                    // Partikel Bewegung
+                    const shimmer = Math.sin(time * 5 + p.offset);
+                    ctx.arc(p.x, p.y, p.size * (1 + shimmer * 0.3), 0, Math.PI*2);
+                    ctx.fill();
                 });
 
+                ctx.restore();
                 animId = requestAnimationFrame(loop);
             }
             loop();
         }
 
-        function stopAnim() { cancelAnimationFrame(animId); }
+        function stopAnimation() {
+            if(animId) { cancelAnimationFrame(animId); animId = null; }
+        }
     </script>
 </body>
 </html>
