@@ -15,113 +15,103 @@
     <style>
         :root {
             --g-blue: #1a73e8;
-            --g-blue-hover: #1765cc;
-            --g-red: #d93025;
             --g-bg: #ffffff;
             --g-surface: #ffffff;
-            --g-sidebar: #ffffff;
             --g-border: #dadce0;
             --text-main: #202124;
             --text-sub: #5f6368;
-            --card-bg: #ffffff;
             --nav-active: #e8f0fe;
-            --header-h: 64px;
         }
 
         body.dark-mode {
             --g-bg: #121212;
             --g-surface: #1e1e1e;
-            --g-sidebar: #121212;
             --g-border: #3c4043;
             --text-main: #e8eaed;
             --text-sub: #9aa0a6;
-            --card-bg: #202124;
             --nav-active: #3c4043;
         }
 
-        body { 
-            margin: 0; 
+        body, html { 
+            margin: 0; padding: 0; height: 100%; width: 100%;
             font-family: 'Roboto', sans-serif; 
-            background: var(--g-bg); 
-            color: var(--text-main);
-            transition: background 0.2s;
-            -webkit-tap-highlight-color: transparent;
-        }
-
-        /* HEADER */
-        .header {
-            height: var(--header-h);
-            padding: 0 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            border-bottom: 1px solid var(--g-border);
-            background: var(--g-surface);
-            position: sticky;
-            top: 0;
-            z-index: 100;
-        }
-
-        .brand { display: flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 400; }
-        .brand b { color: var(--g-blue); }
-
-        /* LAYOUT */
-        .main-container {
-            display: flex;
-            min-height: calc(100vh - var(--header-h));
-        }
-
-        /* SIDEBAR (Desktop) */
-        .sidebar {
-            width: 280px;
-            padding: 24px 12px;
-            border-right: 1px solid var(--g-border);
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-        }
-
-        .nav-item {
-            display: flex; align-items: center; gap: 12px;
-            padding: 12px 16px; border-radius: 0 24px 24px 0;
-            cursor: pointer; color: var(--text-main);
-            text-decoration: none; font-size: 14px; font-weight: 500;
-        }
-        .nav-item:hover { background: var(--g-border); }
-        .nav-item.active { background: var(--nav-active); color: var(--g-blue); }
-
-        /* MOBILE NAV (Bottom Bar) */
-        .mobile-nav {
-            display: none;
-            position: fixed; bottom: 0; left: 0; right: 0;
-            height: 64px; background: var(--g-surface);
-            border-top: 1px solid var(--g-border);
-            justify-content: space-around; align-items: center;
-            z-index: 1000;
-        }
-        .m-nav-item {
-            display: flex; flex-direction: column; align-items: center;
-            font-size: 10px; color: var(--text-sub); gap: 4px;
-        }
-        .m-nav-item.active { color: var(--g-blue); }
-
-        /* CONTENT */
-        .content {
-            flex: 1;
-            padding: 40px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .card {
-            border: 1px solid var(--g-border);
-            border-radius: 12px;
-            margin-bottom: 24px;
-            background: var(--card-bg);
+            background: var(--g-bg); color: var(--text-main);
             overflow: hidden;
         }
-        .card-header { padding: 16px 20px; border-bottom: 1px solid var(--g-border); font-weight: 500; }
-        .card-body { padding: 20px; }
+
+        /* --- LANDING PAGE (GEMINI STYLE) --- */
+        #landing-page {
+            position: fixed; inset: 0; background: #000; z-index: 2000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            color: white; text-align: center; overflow: hidden;
+        }
+
+        /* Der pulsierende Stern-Effekt */
+        .nexus-star {
+            position: relative; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(66,133,244,0.3) 0%, transparent 70%);
+            display: flex; align-items: center; justify-content: center;
+            animation: pulse 4s infinite ease-in-out;
+        }
+
+        .star-core {
+            width: 150px; height: 150px;
+            background: linear-gradient(135deg, #4285f4, #9b72cb, #d96570, #f4b400);
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            filter: blur(2px); animation: rotate 10s infinite linear;
+        }
+
+        @keyframes pulse { 0%, 100% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.1); opacity: 1; } }
+        @keyframes rotate { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+
+        .intro-text {
+            margin-top: 40px; font-size: 28px; font-weight: 300;
+            opacity: 0; animation: fadeInUp 2s forwards 0.5s;
+        }
+
+        .gradient-title {
+            background: linear-gradient(90deg, #4285f4, #9b72cb, #d96570, #4285f4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            font-weight: 500;
+        }
+
+        @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        .btn-google {
+            margin-top: 50px; padding: 12px 32px; border-radius: 30px;
+            background: white; color: black; border: none; font-weight: 500;
+            cursor: pointer; display: flex; align-items: center; gap: 10px;
+            font-size: 16px; transition: 0.3s;
+        }
+        .btn-google:hover { transform: scale(1.05); box-shadow: 0 0 20px rgba(255,255,255,0.4); }
+
+        /* --- CONSOLE UI (GOOGLE STYLE) --- */
+        #main-ui { display: none; height: 100vh; flex-direction: column; }
+
+        .header {
+            height: 64px; padding: 0 24px; display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid var(--g-border); background: var(--g-surface);
+        }
+
+        .main-container { display: flex; flex: 1; overflow: hidden; }
+
+        .sidebar { width: 280px; padding: 24px 12px; border-right: 1px solid var(--g-border); }
+
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+            border-radius: 0 24px 24px 0; cursor: pointer; color: var(--text-main);
+            text-decoration: none; font-size: 14px; font-weight: 500; margin-bottom: 4px;
+        }
+        .nav-item.active { background: var(--nav-active); color: var(--g-blue); }
+
+        .content { flex: 1; padding: 40px; overflow-y: auto; background: var(--g-bg); }
+
+        .card {
+            border: 1px solid var(--g-border); border-radius: 12px;
+            margin-bottom: 24px; background: var(--g-surface);
+        }
+        .card-header { padding: 16px 24px; border-bottom: 1px solid var(--g-border); font-weight: 500; }
+        .card-body { padding: 20px 24px; }
 
         .setting-row {
             display: flex; justify-content: space-between; align-items: center;
@@ -129,58 +119,48 @@
         }
         .setting-row:last-child { border: none; }
 
-        /* FORM ELEMENTS */
-        select {
-            padding: 8px 12px; border-radius: 8px;
-            border: 1px solid var(--g-border);
-            background: var(--g-surface); color: var(--text-main);
-            font-size: 14px; outline: none;
+        /* MOBILE BOTTOM NAV */
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; right: 0;
+            height: 64px; background: var(--g-surface); border-top: 1px solid var(--g-border);
+            justify-content: space-around; align-items: center; z-index: 100;
         }
 
-        .btn {
-            padding: 12px 24px; border-radius: 24px;
-            border: 1px solid var(--g-border);
-            background: var(--g-surface); color: var(--text-main);
-            font-weight: 500; cursor: pointer;
-            display: inline-flex; align-items: center; gap: 8px;
-            transition: 0.2s;
-        }
-        .btn-blue { background: var(--g-blue); color: white; border: none; width: 100%; justify-content: center; }
-
-        /* RESPONSIVE FIXES */
         @media (max-width: 768px) {
             .sidebar { display: none; }
-            .mobile-nav { display: flex; }
-            .content { padding: 20px; padding-bottom: 80px; } /* Platz für Bottom Nav */
-            .header { padding: 0 16px; }
+            .bottom-nav { display: flex; }
+            .content { padding: 20px; padding-bottom: 80px; }
             .setting-row { flex-direction: column; align-items: flex-start; gap: 12px; }
             select { width: 100%; }
         }
 
-        #auth-guard {
-            position: fixed; inset: 0; background: var(--g-bg); z-index: 2000;
-            display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 20px; text-align: center;
-        }
-
         .avatar { width: 32px; height: 32px; border-radius: 50%; }
+        select { padding: 8px 12px; border-radius: 8px; border: 1px solid var(--g-border); background: var(--g-surface); color: var(--text-main); }
+        .btn-save { padding: 12px 24px; border-radius: 24px; background: var(--g-blue); color: white; border: none; font-weight: 500; cursor: pointer; width: 100%; margin-top: 20px; }
     </style>
 </head>
-<body class="light-mode">
+<body class="dark-mode">
 
-    <div id="auth-guard">
-        <span class="material-icons-outlined" style="font-size: 80px; color: var(--g-blue); margin-bottom: 24px;">account_circle</span>
-        <h1 style="font-weight: 400; margin: 0 0 8px 0;">NexusAI Console</h1>
-        <p style="color: var(--text-sub); margin-bottom: 32px;">Verwalte deine persönlichen KI-Einstellungen.</p>
-        <button class="btn btn-blue" onclick="signIn()" style="max-width: 250px;">
-            Mit Google anmelden
+    <div id="landing-page">
+        <div class="nexus-star">
+            <div class="star-core"></div>
+        </div>
+        <div class="intro-text">
+            Eine neue Ära von <br>
+            <span class="gradient-title" style="font-size: 42px;">NexusAI</span>
+        </div>
+        <button class="btn-google" onclick="signIn()">
+            <img src="https://www.gstatic.com/images/branding/product/1x/gsa_512dp.png" width="20">
+            NexusAI jetzt ausprobieren
         </button>
+        <div style="position: absolute; bottom: 30px; font-size: 12px; opacity: 0.5;">Nexus Console v2.0 | Powered by Google Firebase</div>
     </div>
 
-    <div id="main-ui" style="display:none;">
+    <div id="main-ui">
         <header class="header">
-            <div class="brand">
+            <div style="display:flex; align-items:center; gap:8px;">
                 <span class="material-icons-outlined" style="color:var(--g-blue)">settings</span>
-                <span>NexusAI <b>Console</b></span>
+                <span style="font-size: 18px;">NexusAI <b>Console</b></span>
             </div>
             <img id="u-img" class="avatar">
         </header>
@@ -189,84 +169,54 @@
             <nav class="sidebar">
                 <div class="nav-item active"><span class="material-icons-outlined">tune</span> Einstellungen</div>
                 <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'">
-                    <span class="material-icons-outlined">chat</span> Zurück zum Chat
+                    <span class="material-icons-outlined">chat</span> Zum Chat
                 </div>
                 <div class="nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span> Abmelden</div>
             </nav>
 
             <main class="content">
-                <h2 style="font-weight: 400; margin-bottom: 24px;">Einstellungen</h2>
+                <h2 style="font-weight: 400; margin-bottom: 24px;">Personalisierung</h2>
 
                 <div class="card">
                     <div class="card-header">Erscheinungsbild</div>
                     <div class="card-body">
                         <div class="setting-row">
                             <div>
-                                <div style="font-weight:500;">Design-Modus</div>
-                                <div style="font-size:12px; color:var(--text-sub);">Wähle dein bevorzugtes Farbschema.</div>
+                                <div>Design-Modus</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wähle helles oder dunkles Design.</div>
                             </div>
                             <select id="set-theme" onchange="applyTheme(this.value)">
-                                <option value="light">Hell (Light Mode)</option>
-                                <option value="dark">Dunkel (Dark Mode)</option>
+                                <option value="dark">Dunkel (Standard)</option>
+                                <option value="light">Hell</option>
                             </select>
                         </div>
                     </div>
                 </div>
 
                 <div class="card">
-                    <div class="card-header">KI-Konfiguration</div>
+                    <div class="card-header">KI-Parameter</div>
                     <div class="card-body">
                         <div class="setting-row">
                             <div>
-                                <div style="font-weight:500;">Standard-Modell</div>
-                                <div style="font-size:12px; color:var(--text-sub);">Welches Gehirn soll Nexus nutzen?</div>
+                                <div>Standard-Modell</div>
+                                <div style="font-size:12px; color:var(--text-sub);">Wähle das Gehirn deiner KI.</div>
                             </div>
                             <select id="set-model">
                                 <option value="gpt-4o">Nexus Ultra (GPT-4o)</option>
                                 <option value="gpt-4o-mini">Nexus Flash (Mini)</option>
                             </select>
                         </div>
-                        <div class="setting-row">
-                            <div>
-                                <div style="font-weight:500;">Kreativität</div>
-                                <div style="font-size:12px; color:var(--text-sub);">Beeinflusst die Varianz der Antworten.</div>
-                            </div>
-                            <input type="range" id="set-temp" min="0" max="1" step="0.1" value="0.7">
-                        </div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <div class="card-header">Datenverwaltung</div>
-                    <div class="card-body">
-                        <p style="font-size: 14px; color: var(--text-sub); margin-bottom: 16px;">
-                            Hier kannst du alle in der Cloud gespeicherten Chatverläufe unwiderruflich löschen.
-                        </p>
-                        <button class="btn" style="color: var(--g-red); width: 100%; justify-content: center;" onclick="clearEverything()">
-                            <span class="material-icons-outlined">delete_forever</span> Alle Daten löschen
-                        </button>
-                    </div>
-                </div>
-                
-                <button class="btn btn-blue" onclick="saveSettings()">
-                    <span class="material-icons-outlined">save</span> Konfiguration speichern
-                </button>
+                <button class="btn-save" onclick="saveSettings()">Änderungen speichern</button>
             </main>
         </div>
 
-        <nav class="mobile-nav">
-            <div class="m-nav-item active">
-                <span class="material-icons-outlined">settings</span>
-                Konsole
-            </div>
-            <div class="m-nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'">
-                <span class="material-icons-outlined">chat</span>
-                Chat
-            </div>
-            <div class="m-nav-item" onclick="signOut()">
-                <span class="material-icons-outlined">logout</span>
-                Logout
-            </div>
+        <nav class="bottom-nav">
+            <div class="nav-item active"><span class="material-icons-outlined">tune</span></div>
+            <div class="nav-item" onclick="window.location.href='https://ki-assistent-alpha.vercel.app/'"><span class="material-icons-outlined">chat</span></div>
+            <div class="nav-item" onclick="signOut()"><span class="material-icons-outlined">logout</span></div>
         </nav>
     </div>
 
@@ -281,16 +231,15 @@
         };
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
-        const db = firebase.firestore();
 
         auth.onAuthStateChanged(user => {
             if (user) {
-                document.getElementById('auth-guard').style.display = 'none';
-                document.getElementById('main-ui').style.display = 'block';
+                document.getElementById('landing-page').style.display = 'none';
+                document.getElementById('main-ui').style.display = 'flex';
                 document.getElementById('u-img').src = user.photoURL;
                 loadLocalSettings();
             } else {
-                document.getElementById('auth-guard').style.display = 'flex';
+                document.getElementById('landing-page').style.display = 'flex';
                 document.getElementById('main-ui').style.display = 'none';
             }
         });
@@ -305,11 +254,10 @@
         function saveSettings() {
             const settings = {
                 model: document.getElementById('set-model').value,
-                theme: document.getElementById('set-theme').value,
-                temp: document.getElementById('set-temp').value
+                theme: document.getElementById('set-theme').value
             };
             localStorage.setItem('nexus_settings', JSON.stringify(settings));
-            alert("Einstellungen wurden auf diesem Gerät gespeichert!");
+            alert("In der Console gespeichert!");
         }
 
         function loadLocalSettings() {
@@ -317,20 +265,9 @@
             if(saved) {
                 const s = JSON.parse(saved);
                 document.getElementById('set-model').value = s.model || 'gpt-4o';
-                document.getElementById('set-theme').value = s.theme || 'light';
-                document.getElementById('set-temp').value = s.temp || 0.7;
-                applyTheme(s.theme);
+                document.getElementById('set-theme').value = s.theme || 'dark';
+                applyTheme(s.theme || 'dark');
             }
-        }
-
-        async function clearEverything() {
-            if(!confirm("Möchtest du wirklich alle Cloud-Daten löschen? Dies kann nicht rückgängig gemacht werden.")) return;
-            const uid = auth.currentUser.uid;
-            const snap = await db.collection('users').doc(uid).collection('chats').get();
-            const batch = db.batch();
-            snap.forEach(doc => batch.delete(doc.ref));
-            await batch.commit();
-            alert("Alle Cloud-Daten wurden gelöscht.");
         }
     </script>
 </body>
